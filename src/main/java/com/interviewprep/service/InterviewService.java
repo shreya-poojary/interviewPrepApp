@@ -14,8 +14,7 @@ import java.util.regex.Pattern;
 @Slf4j
 public class InterviewService {
     private final OllamaService aiService;
-    private final WhisperService sttService;
-    private final PiperTTSService ttsService;
+    private final JavaTTSService ttsService;
     private final StorageService storageService;
     
     private static final Set<String> FILLER_WORDS = Set.of(
@@ -23,10 +22,9 @@ public class InterviewService {
         "literally", "so", "well", "right", "okay", "hmm", "kind of"
     );
     
-    public InterviewService(OllamaService aiService, WhisperService sttService,
-                          PiperTTSService ttsService, StorageService storageService) {
+    public InterviewService(OllamaService aiService, JavaTTSService ttsService,
+                          StorageService storageService) {
         this.aiService = aiService;
-        this.sttService = sttService;
         this.ttsService = ttsService;
         this.storageService = storageService;
     }

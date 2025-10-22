@@ -28,8 +28,7 @@ public class MainFrame extends JFrame {
     // Services
     private final ConfigurationService config;
     private final OllamaService ollamaService;
-    private final WhisperService whisperService;
-    private final PiperTTSService piperService;
+    private final JavaTTSService ttsService;
     private final DocumentService documentService;
     private final StorageService storageService;
     private final InterviewService interviewService;
@@ -54,19 +53,15 @@ public class MainFrame extends JFrame {
         String ollamaModel = config.getProperty("ai.ollama.model", "llama3.1:8b");
         ollamaService = new OllamaService(ollamaUrl, ollamaModel);
         
-        String whisperModel = config.getProperty("stt.whisper.model", "base");
-        String whisperLang = config.getProperty("stt.whisper.language", "en");
-        whisperService = new WhisperService(whisperModel, whisperLang);
-        
-        String piperModel = config.getProperty("tts.piper.model", "en_US-lessac-medium");
-        piperService = new PiperTTSService(piperModel);
+        boolean ttsEnabled = config.getBooleanProperty("tts.enabled", true);
+        ttsService = new JavaTTSService(ttsEnabled);
         
         documentService = new DocumentService();
         
         String storagePath = config.getProperty("storage.path", "data");
         storageService = new StorageService(storagePath);
         
-        interviewService = new InterviewService(ollamaService, whisperService, piperService, storageService);
+        interviewService = new InterviewService(ollamaService, ttsService, storageService);
         videoService = new VideoRecordingService();
         audioService = new AudioRecordingService();
         
@@ -132,16 +127,10 @@ public class MainFrame extends JFrame {
                 status.append("✅ Ollama is available\n");
             }
             
-            if (!whisperService.isAvailable()) {
-                status.append("⚠️ Whisper not installed. Speech-to-text will be unavailable.\n");
+            if (ttsService.isAvailable()) {
+                status.append("✅ Text-to-speech is available\n");
             } else {
-                status.append("✅ Whisper is available\n");
-            }
-            
-            if (!piperService.isAvailable()) {
-                status.append("⚠️ Piper not installed. Text-to-speech will be unavailable.\n");
-            } else {
-                status.append("✅ Piper TTS is available\n");
+                status.append("⚠️ Text-to-speech not available on this system.\n");
             }
             
             if (!videoService.isWebcamAvailable()) {

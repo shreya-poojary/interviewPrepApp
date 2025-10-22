@@ -18,12 +18,12 @@ A **free**, **AI-powered** desktop application for interview preparation with vi
 - **Full Interview Recording** - Capture video and audio of your practice sessions
 - **Local Storage** - All recordings saved securely on your machine
 - **Playback & Review** - Review your performance anytime
-- **Auto-Transcription** - OpenAI Whisper converts speech to text (free & local)
+- **Manual Transcription** - Review and type your answers
 
 ### 🎤 Voice Features
-- **Text-to-Speech** - AI interviewer asks questions aloud using Piper TTS
-- **Speech-to-Text** - Your spoken answers are transcribed automatically
-- **Natural Voices** - High-quality neural voices (free)
+- **Text-to-Speech** - AI interviewer asks questions aloud using Java built-in TTS
+- **System Integration** - Uses Windows/Mac/Linux native speech (no external tools)
+- **Zero Dependencies** - No Python or external packages required
 
 ### 📊 Analytics Dashboard
 - **Performance Tracking** - Monitor your improvement over time
@@ -50,8 +50,9 @@ A **free**, **AI-powered** desktop application for interview preparation with vi
 ### Prerequisites
 - **Java 17+** - [Download](https://adoptium.net/)
 - **Maven 3.8+** - [Download](https://maven.apache.org/download.cgi)
-- **Python 3.8+** (for Whisper) - [Download](https://www.python.org/downloads/)
 - **Ollama** - [Download](https://ollama.ai/download)
+
+**No Python required!** Everything runs in Java.
 
 ### Installation
 
@@ -156,45 +157,7 @@ ollama serve &
 ollama pull llama3.1:8b
 ```
 
-### 4. Install Whisper (Speech-to-Text)
-```bash
-# Install with pip
-pip install -U openai-whisper
-
-# Or with pip3 on Linux/Mac
-pip3 install -U openai-whisper
-
-# Verify installation
-whisper --help
-```
-
-### 5. Install Piper TTS (Text-to-Speech)
-
-#### Windows
-1. Download from [https://github.com/rhasspy/piper/releases](https://github.com/rhasspy/piper/releases)
-2. Extract to `C:\Program Files\Piper`
-3. Add to PATH:
-   - Open System Properties → Environment Variables
-   - Edit PATH and add `C:\Program Files\Piper`
-4. Download voice model:
-   ```batch
-   curl -L -o en_US-lessac-medium.onnx https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
-   ```
-
-#### Linux/Mac
-```bash
-# Download Piper
-wget https://github.com/rhasspy/piper/releases/download/v1.2.0/piper_amd64.tar.gz
-tar -xzf piper_amd64.tar.gz
-sudo mv piper /usr/local/bin/
-
-# Download voice model
-mkdir -p ~/.local/share/piper/voices
-cd ~/.local/share/piper/voices
-wget https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx
-```
-
-### 6. Build the Application
+### 4. Build the Application
 ```bash
 cd IDS517-InterviewApp
 mvn clean package
@@ -294,15 +257,6 @@ ollama pull llama3.1:13b
 ollama pull codellama:13b
 ```
 
-### Available Whisper Models
-| Model | Size | Speed | Accuracy |
-|-------|------|-------|----------|
-| tiny | 39 MB | ⚡⚡⚡⚡⚡ | ⭐⭐ |
-| base | 74 MB | ⚡⚡⚡⚡ | ⭐⭐⭐ |
-| small | 244 MB | ⚡⚡⚡ | ⭐⭐⭐⭐ |
-| medium | 769 MB | ⚡⚡ | ⭐⭐⭐⭐⭐ |
-| large | 1550 MB | ⚡ | ⭐⭐⭐⭐⭐ |
-
 ## 📂 Project Structure
 
 ```
@@ -354,14 +308,10 @@ curl http://localhost:11434/api/tags
 - Ensure no other app is using the webcam
 - Try changing camera index in code (default is 0)
 
-### Whisper Not Found
-```bash
-# Reinstall Whisper
-pip install --upgrade --force-reinstall openai-whisper
-
-# Add to PATH if needed
-export PATH=$PATH:~/.local/bin
-```
+### Text-to-Speech Not Working
+- **Windows**: Should work out of the box (uses PowerShell)
+- **Mac**: Uses built-in `say` command (always available)
+- **Linux**: Install espeak: `sudo apt install espeak`
 
 ### Out of Memory
 ```bash
@@ -444,11 +394,10 @@ Contributions welcome! Please:
 
 Built with these amazing **free** tools:
 - [Ollama](https://ollama.ai/) - Local LLM inference
-- [OpenAI Whisper](https://github.com/openai/whisper) - Speech recognition
-- [Piper TTS](https://github.com/rhasspy/piper) - Text-to-speech
 - [JavaCV](https://github.com/bytedeco/javacv) - Video processing
 - [Apache Tika](https://tika.apache.org/) - Document parsing
 - [FlatLaf](https://www.formdev.com/flatlaf/) - Modern UI
+- Java built-in TTS - Cross-platform text-to-speech
 
 ## 📈 Roadmap
 

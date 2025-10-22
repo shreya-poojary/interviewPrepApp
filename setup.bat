@@ -15,28 +15,12 @@ echo After installation, run: ollama pull llama3.1:8b
 echo.
 pause
 
-echo Step 2: Installing Whisper...
-echo.
-echo Requirements: Python 3.8+ and pip
-python --version
-echo.
-echo Installing OpenAI Whisper...
-pip install -U openai-whisper
-echo.
-
-echo Step 3: Installing Piper TTS...
-echo.
-echo Download Piper from: https://github.com/rhasspy/piper/releases
-echo Extract to a folder and add to PATH
-echo.
-pause
-
-echo Step 4: Building the application...
+echo Step 2: Building the application...
 echo.
 call mvn clean package
 echo.
 
-echo Step 5: Creating directories...
+echo Step 3: Creating directories...
 mkdir data 2>nul
 mkdir recordings 2>nul
 mkdir logs 2>nul

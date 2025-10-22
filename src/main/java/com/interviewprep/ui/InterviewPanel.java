@@ -285,14 +285,9 @@ public class InterviewPanel extends JPanel {
     }
     
     private void speakQuestion(String text) {
-        new Thread(() -> {
-            try {
-                File tempFile = File.createTempFile("question_", ".wav");
-                mainFrame.getPiperService().synthesize(text, tempFile);
-            } catch (Exception e) {
-                log.warn("Could not speak question: " + e.getMessage());
-            }
-        }).start();
+        if (mainFrame.getTtsService() != null) {
+            mainFrame.getTtsService().speakAsync(text);
+        }
     }
     
     private void submitAnswer() {
