@@ -1,0 +1,50 @@
+# Compiled class files
+*.class
+target/
+*.jar
+*.war
+*.ear
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.eclipse/
+.settings/
+.project
+.classpath
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# Application data
+data/
+recordings/
+logs/
+temp/
+mcp_data/
+*.db
+*.sqlite
+
+# OS specific
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+*~
+
+# Sensitive information
+application-local.properties
+*.key
+*.pem
+
+# Build artifacts
+*.log
+hs_err_pid*
+replay_pid*
+
