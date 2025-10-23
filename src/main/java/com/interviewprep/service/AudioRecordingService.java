@@ -58,6 +58,11 @@ public class AudioRecordingService {
     public void startRecording() {
         if (isRecording) return;
         
+        if (targetLine == null) {
+            log.error("Audio recording not initialized. Call initialize() first.");
+            return;
+        }
+        
         isRecording = true;
         targetLine.start();
         
@@ -81,8 +86,11 @@ public class AudioRecordingService {
         if (!isRecording) return outputPath;
         
         isRecording = false;
-        targetLine.stop();
-        targetLine.close();
+        
+        if (targetLine != null) {
+            targetLine.stop();
+            targetLine.close();
+        }
         
         if (recordingThread != null) {
             recordingThread.join(2000);
@@ -121,6 +129,10 @@ public class AudioRecordingService {
     
     public String getOutputPath() {
         return outputPath;
+    }
+    
+    public boolean isInitialized() {
+        return targetLine != null && outputPath != null;
     }
 }
 

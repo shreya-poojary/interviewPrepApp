@@ -220,5 +220,14 @@ public class MainFrame extends JFrame {
     public void setCurrentQuestions(List<InterviewQuestion> questions) {
         this.currentQuestions = questions;
     }
+    
+    // Getters for services
+    public VideoRecordingService getVideoService() {
+        return videoService;
+    }
+    
+    public AudioRecordingService getAudioService() {
+        return audioService;
+    }
 }
 

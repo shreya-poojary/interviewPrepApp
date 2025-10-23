@@ -65,6 +65,11 @@ public class VideoRecordingService {
     public void startRecording() {
         if (isRecording) return;
         
+        if (grabber == null || recorder == null) {
+            log.error("Video recording not initialized. Call initialize() first.");
+            return;
+        }
+        
         isRecording = true;
         recordingThread = new Thread(() -> {
             try {
@@ -140,6 +145,10 @@ public class VideoRecordingService {
     
     public String getOutputPath() {
         return outputPath;
+    }
+    
+    public boolean isInitialized() {
+        return grabber != null && recorder != null && outputPath != null;
     }
 }
 

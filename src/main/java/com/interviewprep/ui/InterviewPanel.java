@@ -150,6 +150,40 @@ public class InterviewPanel extends JPanel {
         controlPanel.add(stopButton);
         
         add(controlPanel, BorderLayout.SOUTH);
+        
+        // Recording Controls Panel
+        JPanel recordingPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        recordingPanel.setBorder(BorderFactory.createTitledBorder("Recording Controls"));
+        
+        // Video recording button
+        JButton videoButton = new JButton("📹 Video");
+        videoButton.setToolTipText("Toggle video recording");
+        videoButton.setPreferredSize(new Dimension(100, 35));
+        videoButton.addActionListener(e -> toggleVideoRecording());
+        recordingPanel.add(videoButton);
+        
+        // Audio recording button  
+        JButton audioButton = new JButton("🎤 Audio");
+        audioButton.setToolTipText("Toggle audio recording");
+        audioButton.setPreferredSize(new Dimension(100, 35));
+        audioButton.addActionListener(e -> toggleAudioRecording());
+        recordingPanel.add(audioButton);
+        
+        // Playback button
+        JButton playbackButton = new JButton("▶️ Playback");
+        playbackButton.setToolTipText("Review recordings");
+        playbackButton.setPreferredSize(new Dimension(120, 35));
+        playbackButton.addActionListener(e -> showPlayback());
+        recordingPanel.add(playbackButton);
+        
+        // Add recording panel above controls
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(recordingPanel, BorderLayout.NORTH);
+        bottomPanel.add(controlPanel, BorderLayout.SOUTH);
+        
+        // Replace the old control panel
+        remove(controlPanel);
+        add(bottomPanel, BorderLayout.SOUTH);
     }
     
     private void startInterview() {
@@ -348,6 +382,63 @@ public class InterviewPanel extends JPanel {
             if (submitAnswerButton.isEnabled()) {
                 submitAnswer();
             }
+        }
+    }
+    
+    private void toggleVideoRecording() {
+        try {
+            VideoRecordingService videoService = mainFrame.getVideoService();
+            if (videoService.isRecording()) {
+                videoService.stopRecording();
+                log.info("Video recording stopped");
+            } else {
+                // Initialize if not already done
+                if (!videoService.isInitialized()) {
+                    String sessionDir = "recordings/" + java.time.LocalDateTime.now()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + "_" + 
+                            java.util.UUID.randomUUID().toString().substring(0, 8);
+                    videoService.initialize(sessionDir, 640, 480, 30);
+                }
+                videoService.startRecording();
+                log.info("Video recording started");
+            }
+        } catch (Exception e) {
+            log.error("Error toggling video recording", e);
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+        }
+    }
+    
+    private void toggleAudioRecording() {
+        try {
+            AudioRecordingService audioService = mainFrame.getAudioService();
+            if (audioService.isRecording()) {
+                audioService.stopRecording();
+                log.info("Audio recording stopped");
+            } else {
+                // Initialize if not already done
+                if (!audioService.isInitialized()) {
+                    String sessionDir = "recordings/" + java.time.LocalDateTime.now()
+                            .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + "_" + 
+                            java.util.UUID.randomUUID().toString().substring(0, 8);
+                    audioService.initialize(sessionDir);
+                }
+                audioService.startRecording();
+                log.info("Audio recording started");
+            }
+        } catch (Exception e) {
+            log.error("Error toggling audio recording", e);
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
+        }
+    }
+    
+    private void showPlayback() {
+        try {
+            // Switch to analytics tab to show recordings
+            mainFrame.switchToTab(5); // Analytics tab
+            JOptionPane.showMessageDialog(this, "Check the Analytics tab to review your recordings!");
+        } catch (Exception e) {
+            log.error("Error showing playback", e);
+            JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
         }
     }
     
