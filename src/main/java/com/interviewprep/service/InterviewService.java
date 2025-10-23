@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public class InterviewService {
-    private final OllamaService aiService;
+    private final AIServiceManager aiServiceManager;
     private final JavaTTSService ttsService;
     private final StorageService storageService;
     
@@ -22,9 +22,9 @@ public class InterviewService {
         "literally", "so", "well", "right", "okay", "hmm", "kind of"
     );
     
-    public InterviewService(OllamaService aiService, JavaTTSService ttsService,
+    public InterviewService(AIServiceManager aiServiceManager, JavaTTSService ttsService,
                           StorageService storageService) {
-        this.aiService = aiService;
+        this.aiServiceManager = aiServiceManager;
         this.ttsService = ttsService;
         this.storageService = storageService;
     }
@@ -34,7 +34,7 @@ public class InterviewService {
      */
     public ResumeAnalysis analyzeResume(Resume resume, JobDescription jobDescription) throws IOException {
         String prompt = buildResumeAnalysisPrompt(resume, jobDescription);
-        String response = aiService.generate(prompt);
+        String response = aiServiceManager.generate(prompt);
         return parseResumeAnalysis(response);
     }
     
@@ -44,7 +44,7 @@ public class InterviewService {
     public List<InterviewQuestion> generateQuestions(Resume resume, JobDescription jobDescription,
                                                      InterviewMode mode, int count) throws IOException {
         String prompt = buildQuestionGenerationPrompt(resume, jobDescription, mode, count);
-        String response = aiService.generate(prompt);
+        String response = aiServiceManager.generate(prompt);
         return parseQuestions(response, mode);
     }
     
@@ -61,7 +61,7 @@ public class InterviewService {
         
         // Get AI feedback
         String prompt = buildAnswerEvaluationPrompt(question, answer);
-        String feedback = aiService.generate(prompt);
+        String feedback = aiServiceManager.generate(prompt);
         
         analysis.setFeedback(feedback);
         analysis.setScore(extractScoreFromFeedback(feedback));

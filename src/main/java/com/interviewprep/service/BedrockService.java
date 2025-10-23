@@ -1,0 +1,206 @@
+package com.interviewprep.service;
+
+import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
+import software.amazon.awssdk.services.bedrockruntime.model.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.util.List;
+import java.util.ArrayList;
+
+/**
+ * AWS Bedrock service using Converse API
+ */
+@Slf4j
+public class BedrockService implements AIService {
+    
+    private final BedrockRuntimeClient bedrockClient;
+    private final String modelId;
+    private final String region;
+    private final Gson gson;
+    
+    public BedrockService(String modelId, String region) {
+        this.modelId = modelId;
+        this.region = region;
+        this.gson = new Gson();
+        
+        try {
+            this.bedrockClient = BedrockRuntimeClient.builder()
+                    .region(Region.of(region))
+                    .credentialsProvider(DefaultCredentialsProvider.create())
+                    .build();
+            log.info("Bedrock client initialized for model: {} in region: {}", modelId, region);
+        } catch (Exception e) {
+            log.error("Failed to initialize Bedrock client", e);
+            throw new RuntimeException("Failed to initialize Bedrock client", e);
+        }
+    }
+    
+    public BedrockService(String modelId, String region, String accessKeyId, String secretAccessKey) {
+        this.modelId = modelId;
+        this.region = region;
+        this.gson = new Gson();
+        
+        try {
+            this.bedrockClient = BedrockRuntimeClient.builder()
+                    .region(Region.of(region))
+                    .credentialsProvider(() -> AwsBasicCredentials.create(accessKeyId, secretAccessKey))
+                    .build();
+            log.info("Bedrock client initialized with custom credentials for model: {} in region: {}", modelId, region);
+        } catch (Exception e) {
+            log.error("Failed to initialize Bedrock client with custom credentials", e);
+            throw new RuntimeException("Failed to initialize Bedrock client", e);
+        }
+    }
+    
+    @Override
+    public String generate(String prompt) {
+        try {
+            // Use InvokeModel API for Claude models
+            if (modelId.startsWith("anthropic.claude")) {
+                return invokeClaudeModel(prompt);
+            } else if (modelId.startsWith("amazon.titan")) {
+                return invokeTitanModel(prompt);
+            } else {
+                // Default to Claude
+                return invokeClaudeModel(prompt);
+            }
+            
+        } catch (Exception e) {
+            log.error("Error calling Bedrock API", e);
+            return "Error: " + e.getMessage();
+        }
+    }
+    
+    private String invokeClaudeModel(String prompt) throws Exception {
+        // Create the request body for Claude
+        String requestBody = String.format("""
+            {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 1000,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": "%s"
+                    }
+                ]
+            }
+            """, prompt.replace("\"", "\\\"").replace("\n", "\\n"));
+        
+        InvokeModelRequest request = InvokeModelRequest.builder()
+                .modelId(modelId)
+                .body(SdkBytes.fromUtf8String(requestBody))
+                .contentType("application/json")
+                .build();
+        
+        InvokeModelResponse response = bedrockClient.invokeModel(request);
+        String responseBody = response.body().asUtf8String();
+        
+        // Parse the response
+        JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
+        if (jsonResponse.has("content") && jsonResponse.get("content").isJsonArray()) {
+            JsonObject content = jsonResponse.getAsJsonArray("content").get(0).getAsJsonObject();
+            if (content.has("text")) {
+                String text = content.get("text").getAsString();
+                log.debug("Bedrock Claude response: {}", text);
+                return text;
+            }
+        }
+        
+        log.warn("Unexpected response format from Claude");
+        return "No response generated";
+    }
+    
+    private String invokeTitanModel(String prompt) throws Exception {
+        // Create the request body for Titan
+        String requestBody = String.format("""
+            {
+                "inputText": "%s",
+                "textGenerationConfig": {
+                    "maxTokenCount": 1000,
+                    "temperature": 0.7,
+                    "topP": 0.9
+                }
+            }
+            """, prompt.replace("\"", "\\\"").replace("\n", "\\n"));
+        
+        InvokeModelRequest request = InvokeModelRequest.builder()
+                .modelId(modelId)
+                .body(SdkBytes.fromUtf8String(requestBody))
+                .contentType("application/json")
+                .build();
+        
+        InvokeModelResponse response = bedrockClient.invokeModel(request);
+        String responseBody = response.body().asUtf8String();
+        
+        // Parse the response
+        JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
+        if (jsonResponse.has("results") && jsonResponse.get("results").isJsonArray()) {
+            JsonObject result = jsonResponse.getAsJsonArray("results").get(0).getAsJsonObject();
+            if (result.has("outputText")) {
+                String text = result.get("outputText").getAsString();
+                log.debug("Bedrock Titan response: {}", text);
+                return text;
+            }
+        }
+        
+        log.warn("Unexpected response format from Titan");
+        return "No response generated";
+    }
+    
+    @Override
+    public boolean isAvailable() {
+        try {
+            return testConnection();
+        } catch (Exception e) {
+            log.warn("Bedrock service not available: {}", e.getMessage());
+            return false;
+        }
+    }
+    
+    @Override
+    public String getServiceName() {
+        return "AWS Bedrock (" + modelId + ")";
+    }
+    
+    @Override
+    public boolean testConnection() {
+        try {
+            // Test with a simple prompt
+            String testResponse = generate("Hello, this is a test. Please respond with 'Test successful'.");
+            return testResponse != null && !testResponse.contains("Error:");
+        } catch (Exception e) {
+            log.error("Bedrock connection test failed", e);
+            return false;
+        }
+    }
+    
+    /**
+     * Get available models for the current region
+     */
+    public List<String> getAvailableModels() {
+        List<String> models = new ArrayList<>();
+        // Add some common models
+        models.add("anthropic.claude-3-5-sonnet-20241022-v2:0");
+        models.add("anthropic.claude-3-haiku-20240307-v1:0");
+        models.add("anthropic.claude-3-opus-20240229-v1:0");
+        models.add("amazon.titan-text-express-v1");
+        models.add("amazon.titan-text-lite-v1");
+        return models;
+    }
+    
+    /**
+     * Close the Bedrock client
+     */
+    public void close() {
+        if (bedrockClient != null) {
+            bedrockClient.close();
+        }
+    }
+}

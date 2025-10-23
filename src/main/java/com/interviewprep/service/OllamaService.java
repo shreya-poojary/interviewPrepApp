@@ -14,7 +14,7 @@ import java.util.List;
  * Free and runs entirely on your machine
  */
 @Slf4j
-public class OllamaService {
+public class OllamaService implements AIService {
     private final OkHttpClient client;
     private final Gson gson;
     private final String baseUrl;
@@ -35,49 +35,54 @@ public class OllamaService {
     /**
      * Generate a response from Ollama
      */
-    public String generate(String prompt) throws IOException {
-        JsonObject requestBody = new JsonObject();
-        requestBody.addProperty("model", model);
-        requestBody.addProperty("stream", false);
-        
-        // Create messages array for chat API
-        com.google.gson.JsonArray messages = new com.google.gson.JsonArray();
-        JsonObject message = new JsonObject();
-        message.addProperty("role", "user");
-        message.addProperty("content", prompt);
-        messages.add(message);
-        requestBody.add("messages", messages);
-        
-        RequestBody body = RequestBody.create(
-            requestBody.toString(),
-            MediaType.parse("application/json")
-        );
-        
-        Request request = new Request.Builder()
-                .url(baseUrl + "/api/chat")
-                .post(body)
-                .build();
-        
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                log.error("Ollama API Error: {} - {}", response.code(), response.message());
-                String errorBody = response.body() != null ? response.body().string() : "No error details";
-                log.error("Error response: {}", errorBody);
-                throw new IOException("Ollama request failed: " + response.code() + " - " + errorBody);
-            }
+    public String generate(String prompt) {
+        try {
+            JsonObject requestBody = new JsonObject();
+            requestBody.addProperty("model", model);
+            requestBody.addProperty("stream", false);
             
-            String responseBody = response.body().string();
-            log.debug("Ollama response: {}", responseBody);
-            JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
+            // Create messages array for chat API
+            com.google.gson.JsonArray messages = new com.google.gson.JsonArray();
+            JsonObject message = new JsonObject();
+            message.addProperty("role", "user");
+            message.addProperty("content", prompt);
+            messages.add(message);
+            requestBody.add("messages", messages);
             
-            // For chat API, the response is in message.content
-            if (jsonResponse.has("message")) {
-                JsonObject messageObj = jsonResponse.getAsJsonObject("message");
-                return messageObj.get("content").getAsString();
-            } else {
-                // Fallback to old format
-                return jsonResponse.get("response").getAsString();
+            RequestBody body = RequestBody.create(
+                requestBody.toString(),
+                MediaType.parse("application/json")
+            );
+            
+            Request request = new Request.Builder()
+                    .url(baseUrl + "/api/chat")
+                    .post(body)
+                    .build();
+            
+            try (Response response = client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    log.error("Ollama API Error: {} - {}", response.code(), response.message());
+                    String errorBody = response.body() != null ? response.body().string() : "No error details";
+                    log.error("Error response: {}", errorBody);
+                    throw new IOException("Ollama request failed: " + response.code() + " - " + errorBody);
+                }
+                
+                String responseBody = response.body().string();
+                log.debug("Ollama response: {}", responseBody);
+                JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
+                
+                // For chat API, the response is in message.content
+                if (jsonResponse.has("message")) {
+                    JsonObject messageObj = jsonResponse.getAsJsonObject("message");
+                    return messageObj.get("content").getAsString();
+                } else {
+                    // Fallback to old format
+                    return jsonResponse.get("response").getAsString();
+                }
             }
+        } catch (IOException e) {
+            log.error("Error calling Ollama API", e);
+            return "Error: " + e.getMessage();
         }
     }
     
@@ -119,30 +124,6 @@ public class OllamaService {
         conversationHistory.clear();
     }
     
-    /**
-     * Check if Ollama is available
-     */
-    public boolean isAvailable() {
-        try {
-            Request request = new Request.Builder()
-                    .url(baseUrl + "/api/tags")
-                    .get()
-                    .build();
-            
-            try (Response response = client.newCall(request).execute()) {
-                boolean available = response.isSuccessful();
-                if (available) {
-                    log.info("Ollama is available at {}", baseUrl);
-                } else {
-                    log.warn("Ollama not responding: {} {}", response.code(), response.message());
-                }
-                return available;
-            }
-        } catch (Exception e) {
-            log.warn("Ollama not available: {}", e.getMessage());
-            return false;
-        }
-    }
     
     /**
      * Test the model with a simple prompt
@@ -176,6 +157,33 @@ public class OllamaService {
                 models.add(element.getAsJsonObject().get("name").getAsString());
             });
             return models;
+        }
+    }
+    
+    @Override
+    public boolean isAvailable() {
+        try {
+            return testConnection();
+        } catch (Exception e) {
+            log.warn("Ollama service not available: {}", e.getMessage());
+            return false;
+        }
+    }
+    
+    @Override
+    public String getServiceName() {
+        return "Ollama (" + model + ")";
+    }
+    
+    @Override
+    public boolean testConnection() {
+        try {
+            // Test with a simple prompt
+            String testResponse = generate("Hello, this is a test. Please respond with 'Test successful'.");
+            return testResponse != null && !testResponse.contains("Error:");
+        } catch (Exception e) {
+            log.error("Ollama connection test failed", e);
+            return false;
         }
     }
     

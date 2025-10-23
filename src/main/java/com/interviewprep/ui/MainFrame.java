@@ -24,10 +24,11 @@ public class MainFrame extends JFrame {
     private InterviewModeSelectorPanel modeSelectorPanel;
     private InterviewPanel interviewPanel;
     private AnalyticsDashboardPanel analyticsPanel;
+    private AIServiceSelectorPanel aiServicePanel;
     
     // Services
     private final ConfigurationService config;
-    private final OllamaService aiService;
+    private final AIServiceManager aiServiceManager;
     private final JavaTTSService ttsService;
     private final DocumentService documentService;
     private final StorageService storageService;
@@ -49,9 +50,8 @@ public class MainFrame extends JFrame {
         // Initialize services
         config = ConfigurationService.getInstance();
         
-        String ollamaUrl = config.getProperty("ai.ollama.url", "http://localhost:11434");
-        String ollamaModel = config.getProperty("ai.ollama.model", "llama3.2:latest");
-        aiService = new OllamaService(ollamaUrl, ollamaModel);
+        // Initialize AI Service Manager (handles both Ollama and Bedrock)
+        aiServiceManager = new AIServiceManager(config);
         
         boolean ttsEnabled = config.getBooleanProperty("tts.enabled", true);
         ttsService = new JavaTTSService(ttsEnabled);
@@ -61,7 +61,7 @@ public class MainFrame extends JFrame {
         String storagePath = config.getProperty("storage.path", "data");
         storageService = new StorageService(storagePath);
         
-        interviewService = new InterviewService(aiService, ttsService, storageService);
+        interviewService = new InterviewService(aiServiceManager, ttsService, storageService);
         videoService = new VideoRecordingService();
         audioService = new AudioRecordingService();
         
@@ -92,6 +92,7 @@ public class MainFrame extends JFrame {
         modeSelectorPanel = new InterviewModeSelectorPanel(this);
         interviewPanel = new InterviewPanel(this);
         analyticsPanel = new AnalyticsDashboardPanel(this);
+        aiServicePanel = new AIServiceSelectorPanel(this);
         
         // Add tabs with icons
         tabbedPane.addTab("📄 Resume", resumePanel);
@@ -100,6 +101,7 @@ public class MainFrame extends JFrame {
         tabbedPane.addTab("🎯 Mode", modeSelectorPanel);
         tabbedPane.addTab("🎤 Interview", interviewPanel);
         tabbedPane.addTab("📊 Analytics", analyticsPanel);
+        tabbedPane.addTab("🤖 AI Service", aiServicePanel);
         
         add(tabbedPane);
         
@@ -121,10 +123,13 @@ public class MainFrame extends JFrame {
         SwingUtilities.invokeLater(() -> {
             StringBuilder status = new StringBuilder("Service Status:\n\n");
             
-            if (!aiService.isAvailable()) {
-                status.append("⚠️ AI service not available. Check Ollama or configuration.\n");
+            // Test all AI services
+            aiServiceManager.testAllServices();
+            
+            if (!aiServiceManager.isCurrentServiceAvailable()) {
+                status.append("⚠️ AI service not available. Check Ollama or Bedrock configuration.\n");
             } else {
-                status.append("✅ AI service is available\n");
+                status.append("✅ AI service is available (").append(aiServiceManager.getCurrentServiceName()).append(")\n");
             }
             
             if (ttsService.isAvailable()) {
@@ -228,6 +233,46 @@ public class MainFrame extends JFrame {
     
     public AudioRecordingService getAudioService() {
         return audioService;
+    }
+    
+    public AIServiceManager getAIServiceManager() {
+        return aiServiceManager;
+    }
+    
+    public DocumentService getDocumentService() {
+        return documentService;
+    }
+    
+    public InterviewService getInterviewService() {
+        return interviewService;
+    }
+    
+    public StorageService getStorageService() {
+        return storageService;
+    }
+    
+    public JavaTTSService getTtsService() {
+        return ttsService;
+    }
+    
+    public ConfigurationService getConfig() {
+        return config;
+    }
+    
+    public Resume getCurrentResume() {
+        return currentResume;
+    }
+    
+    public JobDescription getCurrentJobDescription() {
+        return currentJobDescription;
+    }
+    
+    public InterviewMode getSelectedMode() {
+        return selectedMode;
+    }
+    
+    public List<InterviewQuestion> getCurrentQuestions() {
+        return currentQuestions;
     }
 }
 
