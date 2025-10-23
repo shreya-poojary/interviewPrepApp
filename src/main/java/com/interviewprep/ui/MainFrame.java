@@ -27,7 +27,7 @@ public class MainFrame extends JFrame {
     
     // Services
     private final ConfigurationService config;
-    private final OllamaService ollamaService;
+    private final OllamaService aiService;
     private final JavaTTSService ttsService;
     private final DocumentService documentService;
     private final StorageService storageService;
@@ -50,8 +50,8 @@ public class MainFrame extends JFrame {
         config = ConfigurationService.getInstance();
         
         String ollamaUrl = config.getProperty("ai.ollama.url", "http://localhost:11434");
-        String ollamaModel = config.getProperty("ai.ollama.model", "llama3.1:8b");
-        ollamaService = new OllamaService(ollamaUrl, ollamaModel);
+        String ollamaModel = config.getProperty("ai.ollama.model", "llama3.2:latest");
+        aiService = new OllamaService(ollamaUrl, ollamaModel);
         
         boolean ttsEnabled = config.getBooleanProperty("tts.enabled", true);
         ttsService = new JavaTTSService(ttsEnabled);
@@ -61,7 +61,7 @@ public class MainFrame extends JFrame {
         String storagePath = config.getProperty("storage.path", "data");
         storageService = new StorageService(storagePath);
         
-        interviewService = new InterviewService(ollamaService, ttsService, storageService);
+        interviewService = new InterviewService(aiService, ttsService, storageService);
         videoService = new VideoRecordingService();
         audioService = new AudioRecordingService();
         
@@ -121,10 +121,10 @@ public class MainFrame extends JFrame {
         SwingUtilities.invokeLater(() -> {
             StringBuilder status = new StringBuilder("Service Status:\n\n");
             
-            if (!ollamaService.isAvailable()) {
-                status.append("⚠️ Ollama not running. Start Ollama or use alternative AI service.\n");
+            if (!aiService.isAvailable()) {
+                status.append("⚠️ AI service not available. Check Ollama or configuration.\n");
             } else {
-                status.append("✅ Ollama is available\n");
+                status.append("✅ AI service is available\n");
             }
             
             if (ttsService.isAvailable()) {

@@ -71,6 +71,9 @@ public class InterviewPanel extends JPanel {
         questionArea.setWrapStyleWord(true);
         questionArea.setFont(new Font("Arial", Font.BOLD, 16));
         questionArea.setMargin(new Insets(15, 15, 15, 15));
+        questionArea.setBackground(Color.WHITE);
+        questionArea.setForeground(Color.BLACK);
+        questionArea.setOpaque(true);
         questionArea.setText("Click 'Start Interview' to begin");
         
         JScrollPane questionScroll = new JScrollPane(questionArea);
@@ -90,6 +93,14 @@ public class InterviewPanel extends JPanel {
         answerArea.setFont(new Font("Arial", Font.PLAIN, 14));
         answerArea.setMargin(new Insets(15, 15, 15, 15));
         answerArea.setEnabled(false);
+        
+        // Add focus listener to ensure proper text input
+        answerArea.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                answerArea.setCaretPosition(answerArea.getText().length());
+            }
+        });
         
         JScrollPane answerScroll = new JScrollPane(answerArea);
         answerScroll.setBorder(BorderFactory.createTitledBorder("Your Answer (Type or speak)"));
@@ -240,10 +251,18 @@ public class InterviewPanel extends JPanel {
     private void displayCurrentQuestion() {
         if (currentQuestionIndex < currentSession.getQuestions().size()) {
             InterviewQuestion question = currentSession.getQuestions().get(currentQuestionIndex);
-            questionArea.setText(String.format("Question %d/%d:\n\n%s",
+            String questionText = String.format("Question %d/%d:\n\n%s",
                 currentQuestionIndex + 1,
                 currentSession.getQuestions().size(),
-                question.getQuestion()));
+                question.getQuestion());
+            
+            log.info("Displaying question: {}", questionText);
+            questionArea.setText(questionText);
+            questionArea.setCaretPosition(0); // Scroll to top
+            
+            // Force repaint to ensure visibility
+            questionArea.repaint();
+            questionArea.revalidate();
             
             answerArea.setText("");
             answerArea.requestFocus();

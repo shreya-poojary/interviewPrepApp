@@ -38,8 +38,15 @@ public class OllamaService {
     public String generate(String prompt) throws IOException {
         JsonObject requestBody = new JsonObject();
         requestBody.addProperty("model", model);
-        requestBody.addProperty("prompt", prompt);
         requestBody.addProperty("stream", false);
+        
+        // Create messages array for chat API
+        com.google.gson.JsonArray messages = new com.google.gson.JsonArray();
+        JsonObject message = new JsonObject();
+        message.addProperty("role", "user");
+        message.addProperty("content", prompt);
+        messages.add(message);
+        requestBody.add("messages", messages);
         
         RequestBody body = RequestBody.create(
             requestBody.toString(),
@@ -47,18 +54,30 @@ public class OllamaService {
         );
         
         Request request = new Request.Builder()
-                .url(baseUrl + "/api/generate")
+                .url(baseUrl + "/api/chat")
                 .post(body)
                 .build();
         
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                throw new IOException("Ollama request failed: " + response.code());
+                log.error("Ollama API Error: {} - {}", response.code(), response.message());
+                String errorBody = response.body() != null ? response.body().string() : "No error details";
+                log.error("Error response: {}", errorBody);
+                throw new IOException("Ollama request failed: " + response.code() + " - " + errorBody);
             }
             
             String responseBody = response.body().string();
+            log.debug("Ollama response: {}", responseBody);
             JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
-            return jsonResponse.get("response").getAsString();
+            
+            // For chat API, the response is in message.content
+            if (jsonResponse.has("message")) {
+                JsonObject messageObj = jsonResponse.getAsJsonObject("message");
+                return messageObj.get("content").getAsString();
+            } else {
+                // Fallback to old format
+                return jsonResponse.get("response").getAsString();
+            }
         }
     }
     
@@ -111,10 +130,30 @@ public class OllamaService {
                     .build();
             
             try (Response response = client.newCall(request).execute()) {
-                return response.isSuccessful();
+                boolean available = response.isSuccessful();
+                if (available) {
+                    log.info("Ollama is available at {}", baseUrl);
+                } else {
+                    log.warn("Ollama not responding: {} {}", response.code(), response.message());
+                }
+                return available;
             }
         } catch (Exception e) {
             log.warn("Ollama not available: {}", e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Test the model with a simple prompt
+     */
+    public boolean testModel() {
+        try {
+            String testResponse = generate("Hello");
+            log.info("Model test successful: {}", testResponse.substring(0, Math.min(50, testResponse.length())));
+            return true;
+        } catch (Exception e) {
+            log.error("Model test failed: {}", e.getMessage());
             return false;
         }
     }

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.nio.file.*;
+import java.nio.file.attribute.FileTime;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -82,7 +83,7 @@ public class StorageService {
             
             return Files.list(sessionsDir)
                     .filter(path -> path.toString().endsWith(".json"))
-                    .sorted(Comparator.comparing(path -> {
+                    .sorted(Comparator.comparing((Path path) -> {
                         try {
                             return Files.getLastModifiedTime(path);
                         } catch (IOException e) {

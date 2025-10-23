@@ -20,11 +20,11 @@ public class KeyboardShortcutManager {
     
     private void registerGlobalShortcuts() {
         JRootPane rootPane = mainFrame.getRootPane();
-        InputMap inputMap = rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        InputMap inputMap = rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap actionMap = rootPane.getActionMap();
         
-        // Space - Toggle recording/submit answer
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "toggleRecording");
+        // Space - Toggle recording/submit answer (only when not typing)
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), "toggleRecording");
         actionMap.put("toggleRecording", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
