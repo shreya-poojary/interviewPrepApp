@@ -283,5 +283,140 @@ public class InterviewService {
         
         return items;
     }
+    
+    /**
+     * Generate comprehensive analytics for an interview session
+     */
+    public InterviewAnalytics generateAnalytics(InterviewSession session) throws IOException {
+        log.info("Generating analytics for session: {}", session.getSessionId());
+        
+        // Build comprehensive analytics prompt
+        String prompt = buildAnalyticsPrompt(session);
+        String response = aiServiceManager.generate(prompt);
+        
+        // Parse the AI response into analytics
+        InterviewAnalytics analytics = parseAnalytics(response, session);
+        
+        log.info("Analytics generated successfully for session: {}", session.getSessionId());
+        return analytics;
+    }
+    
+    private String buildAnalyticsPrompt(InterviewSession session) {
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("You are an expert interview coach. Analyze this interview session and provide comprehensive feedback.\n\n");
+        
+        prompt.append("INTERVIEW SESSION DETAILS:\n");
+        prompt.append("Mode: ").append(session.getMode().getDisplayName()).append("\n");
+        prompt.append("Duration: ").append(session.getTotalDurationSeconds() / 60).append(" minutes\n");
+        prompt.append("Questions: ").append(session.getQuestions().size()).append("\n");
+        prompt.append("Answered: ").append(session.getUserAnswers().size()).append("\n\n");
+        
+        prompt.append("QUESTIONS AND ANSWERS:\n");
+        for (int i = 0; i < session.getQuestions().size(); i++) {
+            InterviewQuestion question = session.getQuestions().get(i);
+            prompt.append("Q").append(i + 1).append(" (").append(question.getCategory()).append("): ");
+            prompt.append(question.getQuestion()).append("\n");
+            
+            if (i < session.getUserAnswers().size()) {
+                String answer = session.getUserAnswers().get(i);
+                prompt.append("Answer: ").append(answer).append("\n");
+                prompt.append("Duration: ").append(session.getAnswerDurations().get(i)).append(" seconds\n");
+            } else {
+                prompt.append("Answer: [Not answered]\n");
+            }
+            prompt.append("\n");
+        }
+        
+        prompt.append("""
+            Provide comprehensive analytics in this exact format:
+            
+            OVERALL_SCORE: [0-10]
+            
+            TECHNICAL_SCORE: [0-10]
+            BEHAVIORAL_SCORE: [0-10]
+            COMMUNICATION_SCORE: [0-10]
+            CONFIDENCE_SCORE: [0-10]
+            
+            PERFORMANCE_LEVEL: [Excellent/Good/Needs Improvement]
+            
+            STRENGTHS:
+            - [Strength 1]
+            - [Strength 2]
+            - [Strength 3]
+            
+            WEAKNESSES:
+            - [Weakness 1]
+            - [Weakness 2]
+            - [Weakness 3]
+            
+            DETAILED_FEEDBACK:
+            [Comprehensive analysis of the interview performance]
+            
+            IMPROVEMENT_SUGGESTIONS:
+            - [Suggestion 1]
+            - [Suggestion 2]
+            - [Suggestion 3]
+            """);
+        
+        return prompt.toString();
+    }
+    
+    private InterviewAnalytics parseAnalytics(String aiResponse, InterviewSession session) {
+        InterviewAnalytics analytics = new InterviewAnalytics();
+        analytics.setSessionId(session.getSessionId());
+        analytics.setGeneratedAt(java.time.LocalDateTime.now());
+        
+        try {
+            // Extract scores
+            analytics.setOverallScore(extractDoubleValue(aiResponse, "OVERALL_SCORE:", 7.0));
+            analytics.setTechnicalScore(extractDoubleValue(aiResponse, "TECHNICAL_SCORE:", 7.0));
+            analytics.setBehavioralScore(extractDoubleValue(aiResponse, "BEHAVIORAL_SCORE:", 7.0));
+            analytics.setCommunicationScore(extractDoubleValue(aiResponse, "COMMUNICATION_SCORE:", 7.0));
+            analytics.setConfidenceScore(extractDoubleValue(aiResponse, "CONFIDENCE_SCORE:", 7.0));
+            
+            // Extract performance level
+            String performanceLevel = extractSection(aiResponse, "PERFORMANCE_LEVEL:");
+            analytics.setPerformanceLevel(performanceLevel.isEmpty() ? "Good" : performanceLevel);
+            
+            // Extract lists
+            analytics.setStrengths(extractList(aiResponse, "STRENGTHS:"));
+            analytics.setWeaknesses(extractList(aiResponse, "WEAKNESSES:"));
+            
+            // Extract detailed feedback
+            String detailedFeedback = extractSection(aiResponse, "DETAILED_FEEDBACK:");
+            analytics.setDetailedFeedback(detailedFeedback.isEmpty() ? aiResponse : detailedFeedback);
+            
+            // Extract improvement suggestions
+            List<String> suggestions = extractList(aiResponse, "IMPROVEMENT_SUGGESTIONS:");
+            analytics.setImprovementSuggestions(suggestions);
+            
+        } catch (Exception e) {
+            log.warn("Error parsing analytics, using fallback", e);
+            analytics.setOverallScore(7.0);
+            analytics.setTechnicalScore(7.0);
+            analytics.setBehavioralScore(7.0);
+            analytics.setCommunicationScore(7.0);
+            analytics.setConfidenceScore(7.0);
+            analytics.setPerformanceLevel("Good");
+            analytics.setDetailedFeedback(aiResponse);
+            analytics.setStrengths(List.of("Good effort", "Completed interview"));
+            analytics.setWeaknesses(List.of("Could improve communication", "Practice more"));
+        }
+        
+        return analytics;
+    }
+    
+    private double extractDoubleValue(String text, String label, double defaultValue) {
+        Pattern pattern = Pattern.compile(label + "\\s*([0-9.]+)");
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.find()) {
+            try {
+                return Double.parseDouble(matcher.group(1));
+            } catch (NumberFormatException e) {
+                log.warn("Error parsing double value for {}: {}", label, matcher.group(1));
+            }
+        }
+        return defaultValue;
+    }
 }
 

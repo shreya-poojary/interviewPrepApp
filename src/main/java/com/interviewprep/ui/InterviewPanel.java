@@ -2,6 +2,7 @@ package com.interviewprep.ui;
 
 import com.interviewprep.model.*;
 import com.interviewprep.service.*;
+import com.interviewprep.util.IconProvider;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -43,7 +44,7 @@ public class InterviewPanel extends JPanel {
         // Header
         JPanel headerPanel = new JPanel(new BorderLayout());
         
-        JLabel titleLabel = new JLabel("🎤 Mock Interview");
+        JLabel titleLabel = new JLabel(IconProvider.getTitle("MICROPHONE", "Mock Interview"));
         titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
         headerPanel.add(titleLabel, BorderLayout.WEST);
         
@@ -118,7 +119,7 @@ public class InterviewPanel extends JPanel {
         backButton.addActionListener(e -> mainFrame.switchToTab(3));
         controlPanel.add(backButton);
         
-        startButton = new JButton("▶ Start Interview");
+        startButton = new JButton(IconProvider.getButtonText("PLAY", "Start Interview"));
         startButton.setFont(new Font("Arial", Font.BOLD, 14));
         startButton.setBackground(new Color(40, 167, 69));
         startButton.setForeground(Color.WHITE);
@@ -139,7 +140,7 @@ public class InterviewPanel extends JPanel {
         nextQuestionButton.addActionListener(e -> nextQuestion());
         controlPanel.add(nextQuestionButton);
         
-        stopButton = new JButton("■ Stop Interview");
+        stopButton = new JButton(IconProvider.getButtonText("STOP", "Stop Interview"));
         stopButton.setFont(new Font("Arial", Font.BOLD, 14));
         stopButton.setBackground(new Color(220, 53, 69));
         stopButton.setForeground(Color.WHITE);
@@ -156,21 +157,21 @@ public class InterviewPanel extends JPanel {
         recordingPanel.setBorder(BorderFactory.createTitledBorder("Recording Controls"));
         
         // Video recording button
-        JButton videoButton = new JButton("📹 Video");
+        JButton videoButton = new JButton(IconProvider.getButtonText("VIDEO", "Video"));
         videoButton.setToolTipText("Toggle video recording");
         videoButton.setPreferredSize(new Dimension(100, 35));
         videoButton.addActionListener(e -> toggleVideoRecording());
         recordingPanel.add(videoButton);
         
         // Audio recording button  
-        JButton audioButton = new JButton("🎤 Audio");
+        JButton audioButton = new JButton(IconProvider.getButtonText("MICROPHONE", "Audio"));
         audioButton.setToolTipText("Toggle audio recording");
         audioButton.setPreferredSize(new Dimension(100, 35));
         audioButton.addActionListener(e -> toggleAudioRecording());
         recordingPanel.add(audioButton);
         
         // Playback button
-        JButton playbackButton = new JButton("▶️ Playback");
+        JButton playbackButton = new JButton(IconProvider.getButtonText("PLAY", "Playback"));
         playbackButton.setToolTipText("Review recordings");
         playbackButton.setPreferredSize(new Dimension(120, 35));
         playbackButton.addActionListener(e -> showPlayback());
@@ -213,7 +214,7 @@ public class InterviewPanel extends JPanel {
             stopButton.setEnabled(true);
             submitAnswerButton.setEnabled(true);
             answerArea.setEnabled(true);
-            statusLabel.setText("● Recording");
+            statusLabel.setText(IconProvider.getStatusMessage("RECORDING", "Recording"));
             statusLabel.setForeground(Color.RED);
             
             log.info("Interview started");
@@ -470,13 +471,21 @@ public class InterviewPanel extends JPanel {
             submitAnswerButton.setEnabled(false);
             nextQuestionButton.setEnabled(false);
             
-            int choice = JOptionPane.showConfirmDialog(this,
-                "Interview saved! View analytics?",
-                "Success",
-                JOptionPane.YES_NO_OPTION);
+            // Create custom dialog with options
+            Object[] options = {"View Analytics", "Generate Analytics", "Close"};
+            int choice = JOptionPane.showOptionDialog(this,
+                "Interview saved successfully!\n\nWhat would you like to do?",
+                "Interview Complete",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]);
             
-            if (choice == JOptionPane.YES_OPTION) {
+            if (choice == 0) { // View Analytics
                 mainFrame.switchToTab(5); // Analytics tab
+            } else if (choice == 1) { // Generate Analytics
+                generateAnalyticsForCurrentSession();
             }
             
             log.info("Interview stopped and saved");
@@ -484,6 +493,66 @@ public class InterviewPanel extends JPanel {
             log.error("Error stopping interview", e);
             JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
         }
+    }
+    
+    private void generateAnalyticsForCurrentSession() {
+        if (currentSession == null) {
+            JOptionPane.showMessageDialog(this, "No session to analyze!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        // Show progress dialog
+        JDialog progressDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Generating Analytics", true);
+        progressDialog.setSize(400, 150);
+        progressDialog.setLocationRelativeTo(this);
+        
+        JPanel progressPanel = new JPanel(new BorderLayout(10, 10));
+        progressPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        JLabel progressLabel = new JLabel("Generating AI-powered analytics...");
+        progressLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        progressPanel.add(progressLabel, BorderLayout.NORTH);
+        
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        progressPanel.add(progressBar, BorderLayout.CENTER);
+        
+        progressDialog.add(progressPanel);
+        progressDialog.setVisible(true);
+        
+        // Generate analytics in background
+        SwingWorker<InterviewAnalytics, Void> worker = new SwingWorker<>() {
+            @Override
+            protected InterviewAnalytics doInBackground() throws Exception {
+                return mainFrame.getInterviewService().generateAnalytics(currentSession);
+            }
+            
+            @Override
+            protected void done() {
+                progressDialog.dispose();
+                try {
+                    InterviewAnalytics analytics = get();
+                    mainFrame.getStorageService().saveAnalytics(analytics);
+                    
+                    JOptionPane.showMessageDialog(InterviewPanel.this,
+                        "Analytics generated successfully!\n\nWould you like to view them?",
+                        "Success",
+                        JOptionPane.QUESTION_MESSAGE);
+                    
+                    // Switch to analytics tab
+                    mainFrame.switchToTab(5);
+                        
+                } catch (Exception e) {
+                    log.error("Error generating analytics", e);
+                    JOptionPane.showMessageDialog(InterviewPanel.this,
+                        "Error generating analytics: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        
+        worker.execute();
     }
 }
 

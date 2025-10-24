@@ -37,9 +37,18 @@ public class AnalyticsDashboardPanel extends JPanel {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
         headerPanel.add(titleLabel, BorderLayout.WEST);
         
+        JPanel headerButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        
+        JButton generateAnalyticsButton = new JButton("🤖 Generate Analytics");
+        generateAnalyticsButton.setToolTipText("Generate AI-powered analytics for selected session");
+        generateAnalyticsButton.addActionListener(e -> generateAnalytics());
+        headerButtons.add(generateAnalyticsButton);
+        
         JButton refreshButton = new JButton("🔄 Refresh");
         refreshButton.addActionListener(e -> loadSessions());
-        headerPanel.add(refreshButton, BorderLayout.EAST);
+        headerButtons.add(refreshButton);
+        
+        headerPanel.add(headerButtons, BorderLayout.EAST);
         
         add(headerPanel, BorderLayout.NORTH);
         
@@ -184,6 +193,87 @@ public class AnalyticsDashboardPanel extends JPanel {
         }
         
         detailsArea.setText(details.toString());
+    }
+    
+    private void generateAnalytics() {
+        int index = sessionList.getSelectedIndex();
+        if (index < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a session first!", "No Selection", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        List<InterviewSession> sessions = storageService.getRecentSessions(20);
+        if (index >= sessions.size()) {
+            JOptionPane.showMessageDialog(this, "Invalid session selection!", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        InterviewSession session = sessions.get(index);
+        
+        // Check if analytics already exist
+        InterviewAnalytics existingAnalytics = storageService.loadAnalytics(session.getSessionId());
+        if (existingAnalytics != null) {
+            int choice = JOptionPane.showConfirmDialog(this,
+                "Analytics already exist for this session. Regenerate?",
+                "Analytics Exist",
+                JOptionPane.YES_NO_OPTION);
+            if (choice != JOptionPane.YES_OPTION) {
+                return;
+            }
+        }
+        
+        // Show progress dialog
+        JDialog progressDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Generating Analytics", true);
+        progressDialog.setSize(400, 150);
+        progressDialog.setLocationRelativeTo(this);
+        
+        JPanel progressPanel = new JPanel(new BorderLayout(10, 10));
+        progressPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
+        JLabel progressLabel = new JLabel("Generating AI-powered analytics...");
+        progressLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        progressPanel.add(progressLabel, BorderLayout.NORTH);
+        
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        progressPanel.add(progressBar, BorderLayout.CENTER);
+        
+        progressDialog.add(progressPanel);
+        progressDialog.setVisible(true);
+        
+        // Generate analytics in background
+        SwingWorker<InterviewAnalytics, Void> worker = new SwingWorker<>() {
+            @Override
+            protected InterviewAnalytics doInBackground() throws Exception {
+                return mainFrame.getInterviewService().generateAnalytics(session);
+            }
+            
+            @Override
+            protected void done() {
+                progressDialog.dispose();
+                try {
+                    InterviewAnalytics analytics = get();
+                    storageService.saveAnalytics(analytics);
+                    
+                    // Refresh the display
+                    loadSelectedSession();
+                    
+                    JOptionPane.showMessageDialog(AnalyticsDashboardPanel.this,
+                        "Analytics generated successfully!",
+                        "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+                        
+                } catch (Exception e) {
+                    log.error("Error generating analytics", e);
+                    JOptionPane.showMessageDialog(AnalyticsDashboardPanel.this,
+                        "Error generating analytics: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        
+        worker.execute();
     }
 }
 

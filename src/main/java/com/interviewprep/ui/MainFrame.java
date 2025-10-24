@@ -2,6 +2,7 @@ package com.interviewprep.ui;
 
 import com.interviewprep.model.*;
 import com.interviewprep.service.*;
+import com.interviewprep.util.IconProvider;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -76,14 +77,22 @@ public class MainFrame extends JFrame {
     }
     
     private void initializeUI() {
-        setTitle("🎯 AI Mock Interview Prep Tool");
+        setTitle(IconProvider.getTitle("TARGET", "AI Mock Interview Prep Tool"));
         setSize(1400, 900);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
+        // Set recommended font for cross-platform compatibility
+        Font recommendedFont = IconProvider.getRecommendedFont();
+        UIManager.put("Label.font", recommendedFont);
+        UIManager.put("Button.font", recommendedFont);
+        UIManager.put("TabbedPane.font", recommendedFont);
+        UIManager.put("TextField.font", recommendedFont);
+        UIManager.put("TextArea.font", recommendedFont);
+        
         // Create tabbed pane
         tabbedPane = new JTabbedPane();
-        tabbedPane.setFont(new Font("Arial", Font.PLAIN, 14));
+        tabbedPane.setFont(recommendedFont);
         
         // Create panels
         resumePanel = new ResumeUploadPanel(this);
@@ -95,13 +104,13 @@ public class MainFrame extends JFrame {
         aiServicePanel = new AIServiceSelectorPanel(this);
         
         // Add tabs with icons
-        tabbedPane.addTab("📄 Resume", resumePanel);
-        tabbedPane.addTab("📋 Job Description", jobDescriptionPanel);
-        tabbedPane.addTab("✅ Review", reviewPanel);
-        tabbedPane.addTab("🎯 Mode", modeSelectorPanel);
-        tabbedPane.addTab("🎤 Interview", interviewPanel);
-        tabbedPane.addTab("📊 Analytics", analyticsPanel);
-        tabbedPane.addTab("🤖 AI Service", aiServicePanel);
+        tabbedPane.addTab(IconProvider.getTitle("DOCUMENT", "Resume"), resumePanel);
+        tabbedPane.addTab(IconProvider.getTitle("CLIPBOARD", "Job Description"), jobDescriptionPanel);
+        tabbedPane.addTab(IconProvider.getTitle("CHECK", "Review"), reviewPanel);
+        tabbedPane.addTab(IconProvider.getTitle("TARGET", "Mode"), modeSelectorPanel);
+        tabbedPane.addTab(IconProvider.getTitle("MICROPHONE", "Interview"), interviewPanel);
+        tabbedPane.addTab(IconProvider.getTitle("CHART", "Analytics"), analyticsPanel);
+        tabbedPane.addTab(IconProvider.getTitle("ROBOT", "AI Service"), aiServicePanel);
         
         add(tabbedPane);
         
@@ -123,31 +132,35 @@ public class MainFrame extends JFrame {
         SwingUtilities.invokeLater(() -> {
             StringBuilder status = new StringBuilder("Service Status:\n\n");
             
+            // Add platform debugging information
+            log.info("Platform Info: {}", IconProvider.getPlatformInfo());
+            status.append("Platform: " + IconProvider.getPlatformInfo() + "\n\n");
+            
             // Test all AI services
             aiServiceManager.testAllServices();
             
             if (!aiServiceManager.isCurrentServiceAvailable()) {
-                status.append("⚠️ AI service not available. Check Ollama or Bedrock configuration.\n");
+                status.append(IconProvider.getStatusMessage("WARNING", "AI service not available. Check Ollama or Bedrock configuration.") + "\n");
             } else {
-                status.append("✅ AI service is available (").append(aiServiceManager.getCurrentServiceName()).append(")\n");
+                status.append(IconProvider.getStatusMessage("CHECK", "AI service is available (" + aiServiceManager.getCurrentServiceName() + ")") + "\n");
             }
             
             if (ttsService.isAvailable()) {
-                status.append("✅ Text-to-speech is available\n");
+                status.append(IconProvider.getStatusMessage("CHECK", "Text-to-speech is available") + "\n");
             } else {
-                status.append("⚠️ Text-to-speech not available on this system.\n");
+                status.append(IconProvider.getStatusMessage("WARNING", "Text-to-speech not available on this system.") + "\n");
             }
             
             if (!videoService.isWebcamAvailable()) {
-                status.append("⚠️ Webcam not detected.\n");
+                status.append(IconProvider.getStatusMessage("WARNING", "Webcam not detected.") + "\n");
             } else {
-                status.append("✅ Webcam is available\n");
+                status.append(IconProvider.getStatusMessage("CHECK", "Webcam is available") + "\n");
             }
             
             if (!audioService.isMicrophoneAvailable()) {
-                status.append("⚠️ Microphone not detected.\n");
+                status.append(IconProvider.getStatusMessage("WARNING", "Microphone not detected.") + "\n");
             } else {
-                status.append("✅ Microphone is available\n");
+                status.append(IconProvider.getStatusMessage("CHECK", "Microphone is available") + "\n");
             }
             
             log.info(status.toString());

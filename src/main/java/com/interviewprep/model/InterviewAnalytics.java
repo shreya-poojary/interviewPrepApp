@@ -38,6 +38,11 @@ public class InterviewAnalytics {
     private List<String> improvementSuggestions;
     private Map<String, Double> categoryScores;
     
+    // Additional fields for AI analytics
+    private LocalDateTime generatedAt;
+    private String performanceLevel;
+    private String detailedFeedback;
+    
     // Question-level details
     private List<QuestionAnalysis> questionAnalyses;
     
