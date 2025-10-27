@@ -2,6 +2,7 @@ package com.interviewprep.service;
 
 import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsSessionCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.regions.Region;
@@ -31,10 +32,48 @@ public class BedrockService implements AIService {
         this.gson = new Gson();
         
         try {
-            this.bedrockClient = BedrockRuntimeClient.builder()
-                    .region(Region.of(region))
-                    .credentialsProvider(DefaultCredentialsProvider.create())
-                    .build();
+            // Try to get credentials from environment variables first
+            String accessKeyId = System.getenv("AWS_ACCESS_KEY_ID");
+            String secretAccessKey = System.getenv("AWS_SECRET_ACCESS_KEY");
+            String sessionToken = System.getenv("AWS_SESSION_TOKEN");
+            
+            log.info("Environment variables - AccessKeyId: {}, SecretAccessKey: {}, SessionToken: {}", 
+                    accessKeyId != null ? "SET" : "NULL", 
+                    secretAccessKey != null ? "SET" : "NULL", 
+                    sessionToken != null ? "SET" : "NULL");
+            
+            if (accessKeyId != null && secretAccessKey != null) {
+                log.info("Using environment variables for AWS credentials");
+                if (sessionToken != null && !sessionToken.isEmpty()) {
+                    log.info("Using session credentials (temporary credentials)");
+                    this.bedrockClient = BedrockRuntimeClient.builder()
+                            .region(Region.of(region))
+                            .credentialsProvider(() -> AwsSessionCredentials.create(accessKeyId, secretAccessKey, sessionToken))
+                            .build();
+                } else {
+                    log.info("Using basic credentials (permanent credentials)");
+                    this.bedrockClient = BedrockRuntimeClient.builder()
+                            .region(Region.of(region))
+                            .credentialsProvider(() -> AwsBasicCredentials.create(accessKeyId, secretAccessKey))
+                            .build();
+                }
+            } else {
+                log.info("Using default credentials provider");
+                this.bedrockClient = BedrockRuntimeClient.builder()
+                        .region(Region.of(region))
+                        .credentialsProvider(DefaultCredentialsProvider.create())
+                        .build();
+            }
+            
+            // Test the credentials immediately
+            log.info("Testing Bedrock client initialization...");
+            try {
+                // Try a simple test call to see if credentials work
+                String testResponse = generate("Test");
+                log.info("Bedrock test successful: {}", testResponse.substring(0, Math.min(50, testResponse.length())));
+            } catch (Exception e) {
+                log.error("Bedrock test failed during initialization", e);
+            }
             log.info("Bedrock client initialized for model: {} in region: {}", modelId, region);
         } catch (Exception e) {
             log.error("Failed to initialize Bedrock client", e);

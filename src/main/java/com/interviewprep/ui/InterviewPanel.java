@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.io.File;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +20,7 @@ public class InterviewPanel extends JPanel {
     private JLabel statusLabel;
     private JLabel timerLabel;
     private JProgressBar progressBar;
+    private JButton generateQuestionsButton;
     private JButton startButton;
     private JButton stopButton;
     private JButton nextQuestionButton;
@@ -75,7 +75,7 @@ public class InterviewPanel extends JPanel {
         questionArea.setBackground(Color.WHITE);
         questionArea.setForeground(Color.BLACK);
         questionArea.setOpaque(true);
-        questionArea.setText("Click 'Start Interview' to begin");
+        questionArea.setText("Click 'Generate Questions' to create interview questions, then 'Start Interview' to begin");
         
         JScrollPane questionScroll = new JScrollPane(questionArea);
         questionScroll.setBorder(BorderFactory.createTitledBorder("Question"));
@@ -119,12 +119,22 @@ public class InterviewPanel extends JPanel {
         backButton.addActionListener(e -> mainFrame.switchToTab(3));
         controlPanel.add(backButton);
         
+        generateQuestionsButton = new JButton(IconProvider.getButtonText("ROBOT", "Generate Questions"));
+        generateQuestionsButton.setFont(new Font("Arial", Font.BOLD, 14));
+        generateQuestionsButton.setBackground(new Color(0, 123, 255));
+        generateQuestionsButton.setForeground(Color.WHITE);
+        generateQuestionsButton.setFocusPainted(false);
+        generateQuestionsButton.setPreferredSize(new Dimension(180, 40));
+        generateQuestionsButton.addActionListener(e -> generateQuestions());
+        controlPanel.add(generateQuestionsButton);
+        
         startButton = new JButton(IconProvider.getButtonText("PLAY", "Start Interview"));
         startButton.setFont(new Font("Arial", Font.BOLD, 14));
         startButton.setBackground(new Color(40, 167, 69));
         startButton.setForeground(Color.WHITE);
         startButton.setFocusPainted(false);
         startButton.setPreferredSize(new Dimension(180, 40));
+        startButton.setEnabled(false); // Initially disabled until questions are generated
         startButton.addActionListener(e -> startInterview());
         controlPanel.add(startButton);
         
@@ -192,7 +202,7 @@ public class InterviewPanel extends JPanel {
             List<InterviewQuestion> questions = mainFrame.getCurrentQuestions();
             
             if (questions == null || questions.isEmpty()) {
-                generateQuestions();
+                JOptionPane.showMessageDialog(this, "Please generate questions first!");
                 return;
             }
             
@@ -234,6 +244,7 @@ public class InterviewPanel extends JPanel {
             return;
         }
         
+        generateQuestionsButton.setEnabled(false);
         startButton.setEnabled(false);
         statusLabel.setText("Generating questions...");
         
@@ -248,14 +259,23 @@ public class InterviewPanel extends JPanel {
                 try {
                     List<InterviewQuestion> questions = get();
                     mainFrame.setCurrentQuestions(questions);
+                    
+                    // Show preview of first question
+                    if (!questions.isEmpty()) {
+                        questionArea.setText("Question 1: " + questions.get(0).getQuestion() + 
+                            "\n\n(" + questions.size() + " questions generated - Click 'Start Interview' to begin)");
+                    }
+                    
                     JOptionPane.showMessageDialog(InterviewPanel.this, 
-                        "Questions generated! Click Start Interview again.");
-                    startButton.setEnabled(true);
-                    statusLabel.setText("Ready");
+                        "Questions generated successfully! You can now start the interview.");
+                    generateQuestionsButton.setEnabled(true);
+                    startButton.setEnabled(true); // Enable start button after questions are generated
+                    statusLabel.setText("Ready - " + questions.size() + " questions generated");
                 } catch (Exception e) {
                     log.error("Error generating questions", e);
                     JOptionPane.showMessageDialog(InterviewPanel.this, "Error: " + e.getMessage());
-                    startButton.setEnabled(true);
+                    generateQuestionsButton.setEnabled(true);
+                    startButton.setEnabled(false); // Keep start button disabled on error
                 }
             }
         };
@@ -345,6 +365,11 @@ public class InterviewPanel extends JPanel {
     }
     
     private void submitAnswer() {
+        // Stop current speech when submitting answer
+        if (mainFrame.getTtsService() != null) {
+            mainFrame.getTtsService().stopSpeaking();
+        }
+        
         String answer = answerArea.getText().trim();
         if (answer.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please provide an answer!");
@@ -366,6 +391,11 @@ public class InterviewPanel extends JPanel {
     }
     
     public void nextQuestion() {
+        // Stop current speech before moving to next question
+        if (mainFrame.getTtsService() != null) {
+            mainFrame.getTtsService().stopSpeaking();
+        }
+        
         currentQuestionIndex++;
         if (currentQuestionIndex < currentSession.getQuestions().size()) {
             displayCurrentQuestion();
@@ -445,6 +475,11 @@ public class InterviewPanel extends JPanel {
     
     private void stopInterview() {
         try {
+            // Stop current speech when stopping interview
+            if (mainFrame.getTtsService() != null) {
+                mainFrame.getTtsService().stopSpeaking();
+            }
+            
             currentSession.complete();
             
             // Stop recordings
@@ -466,7 +501,9 @@ public class InterviewPanel extends JPanel {
             statusLabel.setText("Interview completed!");
             statusLabel.setForeground(new Color(40, 167, 69));
             
-            startButton.setEnabled(true);
+            // Reset button states
+            generateQuestionsButton.setEnabled(true);
+            startButton.setEnabled(false); // Disable until new questions are generated
             stopButton.setEnabled(false);
             submitAnswerButton.setEnabled(false);
             nextQuestionButton.setEnabled(false);

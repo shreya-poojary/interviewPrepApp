@@ -11,6 +11,8 @@ import java.io.*;
 @Slf4j
 public class JavaTTSService {
     private final boolean enabled;
+    private Process currentProcess;
+    private Thread currentThread;
     
     public JavaTTSService(boolean enabled) {
         this.enabled = enabled;
@@ -44,7 +46,32 @@ public class JavaTTSService {
      * Speak text asynchronously (non-blocking)
      */
     public void speakAsync(String text) {
-        new Thread(() -> speak(text)).start();
+        // Stop any current speech
+        stopSpeaking();
+        
+        currentThread = new Thread(() -> speak(text));
+        currentThread.start();
+    }
+    
+    /**
+     * Stop current speech
+     */
+    public void stopSpeaking() {
+        if (currentProcess != null && currentProcess.isAlive()) {
+            currentProcess.destroy();
+            try {
+                currentProcess.waitFor(1, java.util.concurrent.TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        
+        if (currentThread != null && currentThread.isAlive()) {
+            currentThread.interrupt();
+        }
+        
+        currentProcess = null;
+        currentThread = null;
     }
     
     private void speakWindows(String text) throws IOException {
@@ -64,24 +91,26 @@ public class JavaTTSService {
             psCommand
         );
         
-        Process process = pb.start();
+        currentProcess = pb.start();
         
         // Wait for completion (with timeout)
         try {
-            process.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
+            currentProcess.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            process.destroy();
+            currentProcess.destroy();
+            Thread.currentThread().interrupt();
         }
     }
     
     private void speakMac(String text) throws IOException {
         ProcessBuilder pb = new ProcessBuilder("say", text);
-        Process process = pb.start();
+        currentProcess = pb.start();
         
         try {
-            process.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
+            currentProcess.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            process.destroy();
+            currentProcess.destroy();
+            Thread.currentThread().interrupt();
         }
     }
     
@@ -89,14 +118,14 @@ public class JavaTTSService {
         // Try espeak first
         try {
             ProcessBuilder pb = new ProcessBuilder("espeak", text);
-            Process process = pb.start();
-            process.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
+            currentProcess = pb.start();
+            currentProcess.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
         } catch (Exception e) {
             // If espeak not available, try spd-say
             try {
                 ProcessBuilder pb = new ProcessBuilder("spd-say", text);
-                Process process = pb.start();
-                process.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
+                currentProcess = pb.start();
+                currentProcess.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
             } catch (Exception ex) {
                 log.warn("No Linux TTS available. Install espeak or speech-dispatcher");
             }
