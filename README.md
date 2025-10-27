@@ -1,417 +1,361 @@
 # 🎯 AI Mock Interview Prep Tool
 
-A **free**, **AI-powered** desktop application for interview preparation with video/audio recording, real-time feedback, and comprehensive analytics. Built with Java Swing and integrated with **100% free** AI tools.
-
-![Java](https://img.shields.io/badge/Java-17+-orange)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20Mac-blue)
+A comprehensive desktop application built with Java Swing that provides AI-powered mock interview preparation, resume analysis, and interview analytics. The application supports both local AI models (Ollama) and cloud-based AI services (AWS Bedrock) for flexible deployment options.
 
 ## ✨ Features
 
-### 🤖 AI-Powered Intelligence
-- **Ollama Integration** - Free local LLM (Llama 3.1) for resume analysis and question generation
-- **Smart Resume Analysis** - AI evaluates your resume against job descriptions
-- **Dynamic Question Generation** - Personalized interview questions based on your background
-- **Real-time Feedback** - Instant AI evaluation of your answers
+### 🤖 AI-Powered Interview Generation
+- **Dynamic Question Generation**: Generate personalized interview questions based on job descriptions and resume content
+- **Multiple AI Services**: Switch between Ollama (local) and AWS Bedrock (cloud) AI services
+- **Smart Question Categorization**: Questions are automatically categorized (Technical, Behavioral, Leadership, etc.)
 
-### 🎥 Video/Audio Recording
-- **Full Interview Recording** - Capture video and audio of your practice sessions
-- **Local Storage** - All recordings saved securely on your machine
-- **Playback & Review** - Review your performance anytime
-- **Manual Transcription** - Review and type your answers
+### 📄 Resume Analysis
+- **PDF Resume Parsing**: Upload and analyze PDF resumes using Apache Tika
+- **AI-Powered Analysis**: Get detailed feedback on resume strengths, weaknesses, and improvement suggestions
+- **Job Matching**: Compare resume against job descriptions to identify skill gaps and matches
 
-### 🎤 Voice Features
-- **Text-to-Speech** - AI interviewer asks questions aloud using Java built-in TTS
-- **System Integration** - Uses Windows/Mac/Linux native speech (no external tools)
-- **Zero Dependencies** - No Python or external packages required
+### 🎥 Interview Simulation
+- **Video Recording**: Record interview sessions with webcam integration
+- **Audio Recording**: Capture audio responses for later analysis
+- **Real-time Question Display**: Clear, readable question presentation
+- **Interview Modes**: Support for different interview types and durations
 
-### 📊 Analytics Dashboard
-- **Performance Tracking** - Monitor your improvement over time
-- **Detailed Metrics** - Scores for technical, behavioral, and communication skills
-- **Filler Word Detection** - Track and reduce "um", "uh", "like"
-- **Answer Analysis** - Word count, pace, confidence metrics
+### 📊 Advanced Analytics
+- **AI-Generated Analytics**: Comprehensive performance analysis using AI
+- **Performance Scoring**: Technical, behavioral, communication, and confidence scores
+- **Detailed Feedback**: Strengths, weaknesses, and improvement suggestions
+- **Session History**: Track and review past interview sessions
 
-### 🎯 Multiple Interview Modes
-- **Practice Mode** - Unlimited time, hints available
-- **Timed Mode** - Strict time limits, real pressure
-- **Surprise Mode** - Random questions, test adaptability
-- **FAANG Mode** - Tech giant style interviews
-- **Startup Mode** - Fast-paced, culture fit focus
-- **Behavioral Mode** - STAR method, soft skills
+### 🎤 Text-to-Speech
+- **Question Narration**: Listen to questions being read aloud
+- **Cross-Platform TTS**: Works on Windows, macOS, and Linux
+- **Audio Controls**: Play, pause, and stop audio playback
 
-### ⌨️ Productivity Features
-- **Keyboard Shortcuts** - Space, Ctrl+N, Ctrl+M, Ctrl+A, Ctrl+Q, F1
-- **Progress Bars** - Visual feedback on recording and progress
-- **Auto-Save** - Never lose your session data
-- **MCP (Model Context Protocol)** - Adaptive difficulty based on performance
+### 🎨 Modern UI
+- **Cross-Platform Design**: Consistent experience across Windows, macOS, and Linux
+- **Responsive Layout**: Adaptive UI that works on different screen sizes
+- **Icon Support**: Platform-optimized icons and emojis
+- **Dark/Light Themes**: Modern FlatLaf theming support
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Java 17+** - [Download](https://adoptium.net/)
-- **Maven 3.8+** - [Download](https://maven.apache.org/download.cgi)
-- **Ollama** - [Download](https://ollama.ai/download)
-
-**No Python required!** Everything runs in Java.
+- **Java 11 or higher**
+- **Maven 3.6+**
+- **Ollama** (for local AI) or **AWS Account** (for cloud AI)
 
 ### Installation
 
-#### Windows
-```batch
-# 1. Clone the repository
-git clone <your-repo-url>
-cd IDS517-InterviewApp
-
-# 2. Run setup script
-setup.bat
-
-# 3. Start Ollama (in a separate terminal)
-ollama serve
-
-# 4. Pull the AI model
-ollama pull llama3.1:8b
-
-# 5. Run the application
-run.bat
-```
-
-#### Linux/Mac
-```bash
-# 1. Clone the repository
-git clone <your-repo-url>
-cd IDS517-InterviewApp
-
-# 2. Make scripts executable
-chmod +x setup.sh run.sh
-
-# 3. Run setup script
-./setup.sh
-
-# 4. Start Ollama (in a separate terminal)
-ollama serve
-
-# 5. Pull the AI model
-ollama pull llama3.1:8b
-
-# 6. Run the application
-./run.sh
-```
-
-## 📦 Detailed Installation Guide
-
-### 1. Install Java 17+
-```bash
-# Windows (using Chocolatey)
-choco install openjdk17
-
-# Mac (using Homebrew)
-brew install openjdk@17
-
-# Linux (Ubuntu/Debian)
-sudo apt install openjdk-17-jdk
-
-# Verify installation
-java -version
-```
-
-### 2. Install Maven
-```bash
-# Windows (using Chocolatey)
-choco install maven
-
-# Mac (using Homebrew)
-brew install maven
-
-# Linux (Ubuntu/Debian)
-sudo apt install maven
-
-# Verify installation
-mvn -version
-```
-
-### 3. Install Ollama
-
-#### Windows
-1. Download from [https://ollama.ai/download](https://ollama.ai/download)
-2. Run the installer
-3. Open command prompt and run:
-   ```batch
-   ollama serve
-   ```
-4. In a new terminal:
-   ```batch
-   ollama pull llama3.1:8b
-   ```
-
-#### Mac
-```bash
-brew install ollama
-ollama serve &
-ollama pull llama3.1:8b
-```
-
-#### Linux
-```bash
-curl https://ollama.ai/install.sh | sh
-ollama serve &
-ollama pull llama3.1:8b
-```
-
-### 4. Build the Application
-```bash
-cd IDS517-InterviewApp
-mvn clean package
-```
-
-## 📖 Usage Guide
-
-### First-Time Setup
-1. **Launch the application**
+1. **Clone the repository**
    ```bash
-   # Windows
-   run.bat
-   
-   # Linux/Mac
-   ./run.sh
+   git clone <repository-url>
+   cd IDS517-InterviewApp
    ```
 
-2. **Upload your resume**
-   - Go to "📄 Resume" tab
-   - Click "Choose File"
-   - Select PDF, DOCX, or TXT format
+2. **Build the application**
+   ```bash
+   mvn clean compile
+   ```
 
-3. **Add job description**
-   - Go to "📋 Job Description" tab
-   - Paste or upload the job description
+3. **Run the application**
+   ```bash
+   mvn exec:java
+   ```
 
-4. **Get AI analysis**
-   - Go to "✅ Review" tab
-   - Click "🤖 Analyze with AI"
-   - Review match score and feedback
+## 🔧 Configuration
 
-5. **Select interview mode**
-   - Go to "🎯 Mode" tab
-   - Choose your preferred mode (Practice recommended for first time)
+### AI Service Setup
 
-6. **Start practicing!**
-   - Go to "🎤 Interview" tab
-   - Click "▶ Start Interview"
-   - Answer questions (type or speak)
-   - Click "Submit Answer" when done
-   - Review analytics afterward
+#### Option 1: Ollama (Local AI)
+1. Install Ollama from [ollama.ai](https://ollama.ai)
+2. Pull a model:
+   ```bash
+   ollama pull llama3.2:latest
+   ```
+3. The application will automatically detect and use Ollama
 
-### Keyboard Shortcuts
-| Shortcut | Action |
-|----------|--------|
-| `Space` | Toggle Recording/Submit Answer |
-| `Ctrl+N` | Next Question |
-| `Ctrl+M` | Select Interview Mode |
-| `Ctrl+A` | View Analytics |
-| `Ctrl+Q` | Quick Practice Mode |
-| `F1` | Show Help |
+#### Option 2: AWS Bedrock (Cloud AI)
+1. Set up AWS credentials:
+   ```bash
+   export AWS_ACCESS_KEY_ID="your-access-key"
+   export AWS_SECRET_ACCESS_KEY="your-secret-key"
+   export AWS_SESSION_TOKEN="your-session-token"  # For temporary credentials
+   ```
 
-## 🎨 Customization
+2. Configure the model in `src/main/resources/application.properties`:
+   ```properties
+   ai.bedrock.model=amazon.titan-text-express-v1
+   ai.bedrock.region=us-east-1
+   ai.bedrock.enabled=true
+   ```
 
-### Configuration File
-Edit `src/main/resources/application.properties`:
+### Application Properties
+Edit `src/main/resources/application.properties` to customize:
 
 ```properties
-# AI Service (ollama or groq)
-ai.service=ollama
-ai.ollama.url=http://localhost:11434
-ai.ollama.model=llama3.1:8b
+# AI Service Configuration
+ai.preferred.service=ollama  # or bedrock
+ai.ollama.model=llama3.2:latest
+ai.bedrock.model=amazon.titan-text-express-v1
+ai.bedrock.region=us-east-1
 
-# Speech Services
-stt.enabled=true
-stt.whisper.model=base
-tts.enabled=true
-tts.piper.model=en_US-lessac-medium
+# Recording Settings
+recording.video.enabled=true
+recording.audio.enabled=true
+recording.output.directory=recordings
 
-# Video Settings
-video.enabled=true
-video.fps=30
-video.width=640
-video.height=480
-
-# UI Theme (dark or light)
-ui.theme=dark
-ui.keyboard.shortcuts=true
-
-# Analytics
-analytics.track.filler.words=true
-analytics.track.pace=true
+# UI Settings
+ui.theme=flatlaf
+ui.font.family=Segoe UI
 ```
 
-### Available AI Models
+## 📖 User Guide
+
+### Getting Started
+
+1. **Launch the Application**
+   - Run `mvn exec:java` or use your IDE
+   - The application will start with a splash screen
+
+2. **Upload Your Resume**
+   - Go to the "Resume Upload" tab
+   - Click "Choose File" and select your PDF resume
+   - The system will automatically parse and analyze your resume
+
+3. **Enter Job Description**
+   - Navigate to the "Job Description" tab
+   - Paste the job description you're preparing for
+   - This helps generate relevant interview questions
+
+4. **Generate Interview Questions**
+   - Go to the "Interview" tab
+   - Click "Generate Questions" to create personalized questions
+   - Review the generated questions before starting
+
+5. **Start Your Mock Interview**
+   - Click "Start Interview" to begin recording
+   - Answer questions naturally - the system records both video and audio
+   - Use "Next Question" to proceed through the interview
+
+6. **Review Analytics**
+   - After completing the interview, view detailed analytics
+   - Get AI-powered feedback on your performance
+   - Identify areas for improvement
+
+### AI Service Management
+
+The application supports switching between AI services:
+
+1. **Go to AI Service Selector Tab**
+2. **Test Available Services**
+   - Click "Test All Services" to check availability
+   - Green checkmarks indicate working services
+3. **Switch Services**
+   - Select your preferred AI service from the dropdown
+   - Changes take effect immediately
+
+### Recording Features
+
+- **Video Recording**: Automatically starts when you begin an interview
+- **Audio Recording**: Captures your voice responses
+- **Playback**: Review your recordings in the Analytics tab
+- **File Management**: All recordings are saved with timestamps
+
+## 🛠️ Development
+
+### Project Structure
+```
+src/
+├── main/
+│   ├── java/com/interviewprep/
+│   │   ├── ui/                 # User interface components
+│   │   ├── service/            # Business logic services
+│   │   ├── model/              # Data models
+│   │   ├── util/               # Utility classes
+│   │   └── Main.java           # Application entry point
+│   └── resources/
+│       ├── application.properties
+│       └── logback.xml
+├── test/                       # Test suite
+│   ├── java/com/interviewprep/
+│   │   ├── service/            # Unit tests for services
+│   │   ├── ui/                 # UI component tests
+│   │   ├── integration/        # Integration tests
+│   │   └── util/               # Test utilities
+│   └── resources/
+│       └── logback-test.xml    # Test logging configuration
+├── .github/workflows/          # CI/CD pipeline
+├── run-tests.sh               # Linux/macOS test runner
+├── run-tests.bat              # Windows test runner
+├── test-documentation.md      # Comprehensive test documentation
+└── pom.xml                    # Maven configuration
+```
+
+### Key Components
+
+- **MainFrame**: Main application window and tab management
+- **InterviewPanel**: Interview simulation and recording
+- **ResumeUploadPanel**: Resume upload and analysis
+- **AnalyticsDashboardPanel**: Performance analytics and reporting
+- **AIServiceManager**: Manages different AI service integrations
+- **StorageService**: Handles data persistence and file management
+
+### Testing Framework
+
+The application includes a comprehensive test suite with:
+
+#### 🧪 **Test Categories**
+- **Unit Tests**: Fast, isolated tests for individual components
+- **Integration Tests**: End-to-end workflow testing
+- **UI Tests**: Component testing with mocked services
+- **Test Utilities**: Common helpers and mock objects
+
+#### 🚀 **Test Execution**
 ```bash
-# Faster, less accurate
-ollama pull llama3.1:7b
+# Quick test run
+./run-tests.sh    # Linux/macOS
+run-tests.bat     # Windows
 
-# Balanced (recommended)
-ollama pull llama3.1:8b
-
-# Better quality, slower
-ollama pull llama3.1:13b
-
-# For coding interviews
-ollama pull codellama:13b
+# Maven commands
+mvn test                    # Unit tests only
+mvn verify -Pintegration-tests  # Integration tests
+mvn test -Dtest=OllamaServiceTest  # Specific test class
+mvn test jacoco:report     # With coverage report
 ```
 
-## 📂 Project Structure
+#### 📊 **Test Coverage**
+- **Target Coverage**: 70%+ overall instruction coverage
+- **Service Coverage**: 80%+ for critical business logic
+- **Reports**: Generated in `target/site/jacoco/index.html`
 
-```
-IDS517-InterviewApp/
-├── src/main/java/com/interviewprep/
-│   ├── Main.java                       # Application entry point
-│   ├── model/                          # Data models
-│   │   ├── InterviewMode.java
-│   │   ├── InterviewSession.java
-│   │   ├── InterviewAnalytics.java
-│   │   └── ...
-│   ├── service/                        # Business logic
-│   │   ├── OllamaService.java         # AI integration
-│   │   ├── WhisperService.java        # Speech-to-text
-│   │   ├── PiperTTSService.java       # Text-to-speech
-│   │   ├── VideoRecordingService.java
-│   │   ├── InterviewService.java
-│   │   └── StorageService.java        # File-based storage
-│   ├── ui/                             # User interface
-│   │   ├── MainFrame.java
-│   │   ├── ResumeUploadPanel.java
-│   │   ├── InterviewPanel.java
-│   │   ├── AnalyticsDashboardPanel.java
-│   │   └── ...
-│   └── util/                           # Utilities
-├── src/main/resources/
-│   └── application.properties          # Configuration
-├── recordings/                         # Interview recordings
-├── data/                               # Session data (JSON)
-├── pom.xml                             # Maven configuration
-├── setup.bat / setup.sh                # Setup scripts
-├── run.bat / run.sh                    # Run scripts
-└── README.md                           # This file
-```
+#### 🔧 **Test Features**
+- **Mock Services**: Isolated testing with Mockito
+- **Test Data**: Automated test object creation
+- **CI/CD Integration**: GitHub Actions for automated testing
+- **Cross-Platform**: Tests run on Windows, macOS, and Linux
+- **Documentation**: Comprehensive test documentation in `test-documentation.md`
+
+### Building from Source
+
+1. **Clone and build**
+   ```bash
+   git clone <repository-url>
+   cd IDS517-InterviewApp
+   mvn clean package
+   ```
+
+2. **Run tests**
+   ```bash
+   # Run all unit tests
+   mvn test
+   
+   # Run integration tests
+   mvn verify -Pintegration-tests
+   
+   # Run with test scripts
+   ./run-tests.sh    # Linux/macOS
+   run-tests.bat     # Windows
+   ```
+
+3. **Create executable JAR**
+   ```bash
+   mvn package
+   java -jar target/ai-interview-prep-1.0.0.jar
+   ```
 
 ## 🔧 Troubleshooting
 
-### Ollama Not Running
-```bash
-# Start Ollama server
-ollama serve
+### Common Issues
 
-# Check if running
-curl http://localhost:11434/api/tags
+#### AI Service Not Available
+- **Ollama**: Ensure Ollama is running (`ollama serve`)
+- **Bedrock**: Check AWS credentials and model availability
+- **Network**: Verify internet connection for cloud services
+
+#### Recording Issues
+- **Webcam**: Check camera permissions and availability
+- **Microphone**: Ensure microphone access is granted
+- **Storage**: Verify write permissions to recording directory
+
+#### UI Issues
+- **Icons**: Some icons may not display on older systems
+- **Fonts**: Application uses system fonts for best compatibility
+- **Themes**: Try switching between light and dark themes
+
+### Logs and Debugging
+
+Enable debug logging by editing `src/main/resources/logback.xml`:
+```xml
+<logger name="com.interviewprep" level="DEBUG"/>
 ```
 
-### Webcam Not Detected
-- Check permissions in system settings
-- Ensure no other app is using the webcam
-- Try changing camera index in code (default is 0)
-
-### Text-to-Speech Not Working
-- **Windows**: Should work out of the box (uses PowerShell)
-- **Mac**: Uses built-in `say` command (always available)
-- **Linux**: Install espeak: `sudo apt install espeak`
-
-### Out of Memory
-```bash
-# Increase heap size
-java -Xmx4g -jar target/ai-interview-prep-1.0.0.jar
-```
-
-### No Audio Recording
-- Check microphone permissions
-- Test microphone in system settings
-- Ensure Java has audio permissions
-
-## 💰 Cost Comparison
-
-### This Tool (100% Free)
-- Ollama (local): **$0**
-- Whisper (local): **$0**
-- Piper TTS (local): **$0**
-- **Total: $0** ✅
-
-### Cloud Alternatives
-- AWS Bedrock: ~$0.14/session
-- AWS Transcribe: ~$0.36/session
-- AWS Polly: ~$0.002/session
-- **Total: ~$0.50/session** ❌
-
-## 🎓 Best Practices
-
-### For Best Results:
-1. **Practice regularly** - Use daily for 15-20 minutes
-2. **Start with Practice Mode** - Build confidence before timed modes
-3. **Review recordings** - Watch yourself to improve body language
-4. **Track progress** - Use analytics to identify weak areas
-5. **Update resume** - Incorporate AI suggestions
-6. **Vary modes** - Try different modes to prepare for anything
-
-### Interview Tips:
-- **STAR Method** (Situation, Task, Action, Result) for behavioral questions
-- **Think aloud** for technical questions
-- **Ask clarifying questions** before answering
-- **Maintain eye contact** with the camera
-- **Speak clearly** and at a moderate pace
-- **Use specific examples** from your experience
-
-## 🚀 Advanced Features
-
-### MCP (Model Context Protocol)
-The app learns from your performance and adapts:
-- **Difficulty adjustment** - Questions get harder as you improve
-- **Personalized focus** - More questions on weak areas
-- **Progress tracking** - Historical performance trends
-
-### Analytics Metrics
-- Overall performance score (0-10)
-- Category scores (Technical, Behavioral, Communication, Confidence)
-- Filler word count and rate
-- Speaking pace (words per minute)
-- Answer length and structure
-- Improvement over time
-
-## 📜 License
-
-MIT License - feel free to use, modify, and distribute.
+Logs are written to:
+- Console output
+- `logs/application.log` (if configured)
 
 ## 🤝 Contributing
 
-Contributions welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+### Development Workflow
+
+1. **Fork the repository**
+2. **Create a feature branch**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+3. **Write tests for your changes**
+   - Add unit tests for new functionality
+   - Update integration tests if needed
+   - Ensure all tests pass
+4. **Commit your changes**
+   ```bash
+   git commit -m 'Add amazing feature'
+   ```
+5. **Run the test suite**
+   ```bash
+   ./run-tests.sh    # or run-tests.bat on Windows
+   ```
+6. **Push to the branch**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+7. **Open a Pull Request**
+
+### Testing Requirements
+
+- **All new code must have corresponding tests**
+- **Tests must pass before merging**
+- **Coverage must not decrease**
+- **Integration tests must be added for new features**
+
+### Code Quality
+
+- Follow existing code style and patterns
+- Add comprehensive documentation
+- Include error handling and logging
+- Test both success and failure scenarios
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Apache Tika** for document parsing
+- **FlatLaf** for modern UI theming
+- **Ollama** for local AI model support
+- **AWS Bedrock** for cloud AI services
+- **JavaCV** for video recording capabilities
+- **JUnit 5** and **Mockito** for comprehensive testing
+- **JaCoCo** for code coverage analysis
+- **GitHub Actions** for CI/CD automation
 
 ## 📞 Support
 
-- **Issues**: Open a GitHub issue
-- **Discussions**: Use GitHub Discussions
-- **Documentation**: Check the Wiki
-
-## 🎉 Acknowledgments
-
-Built with these amazing **free** tools:
-- [Ollama](https://ollama.ai/) - Local LLM inference
-- [JavaCV](https://github.com/bytedeco/javacv) - Video processing
-- [Apache Tika](https://tika.apache.org/) - Document parsing
-- [FlatLaf](https://www.formdev.com/flatlaf/) - Modern UI
-- Java built-in TTS - Cross-platform text-to-speech
-
-## 📈 Roadmap
-
-- [ ] Export analytics to PDF
-- [ ] Facial expression analysis
-- [ ] Mobile companion app
-- [ ] Collaborative practice sessions
-- [ ] Industry-specific question banks
-- [ ] Integration with LinkedIn
-- [ ] Cloud sync (optional)
+For support and questions:
+- Create an issue in the repository
+- Check the troubleshooting section
+- Review the logs for error details
 
 ---
 
-**Made with ❤️ for students preparing for their dream jobs!**
-
-**Star ⭐ this repo if it helps you ace your interview!**
-
+**Built with ❤️ for better interview preparation**
