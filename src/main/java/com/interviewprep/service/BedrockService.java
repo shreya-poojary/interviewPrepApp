@@ -10,7 +10,7 @@ import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
 import software.amazon.awssdk.services.bedrockruntime.model.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.JsonArray;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -74,7 +74,7 @@ public class BedrockService implements AIService {
             } catch (Exception e) {
                 log.error("Bedrock test failed during initialization", e);
             }
-            log.info("Bedrock client initialized for model: {} in region: {}", modelId, region);
+            log.info("Bedrock client initialized for model: {} in region: {}", modelId, this.region);
         } catch (Exception e) {
             log.error("Failed to initialize Bedrock client", e);
             throw new RuntimeException("Failed to initialize Bedrock client", e);
@@ -91,7 +91,7 @@ public class BedrockService implements AIService {
                     .region(Region.of(region))
                     .credentialsProvider(() -> AwsBasicCredentials.create(accessKeyId, secretAccessKey))
                     .build();
-            log.info("Bedrock client initialized with custom credentials for model: {} in region: {}", modelId, region);
+            log.info("Bedrock client initialized with custom credentials for model: {} in region: {}", modelId, this.region);
         } catch (Exception e) {
             log.error("Failed to initialize Bedrock client with custom credentials", e);
             throw new RuntimeException("Failed to initialize Bedrock client", e);
@@ -118,23 +118,27 @@ public class BedrockService implements AIService {
     }
     
     private String invokeClaudeModel(String prompt) throws Exception {
-        // Create the request body for Claude
-        String requestBody = String.format("""
-            {
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 1000,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": "%s"
-                    }
-                ]
-            }
-            """, prompt.replace("\"", "\\\"").replace("\n", "\\n"));
+        // Validate and truncate prompt if necessary
+        String processedPrompt = validateAndTruncatePrompt(prompt);
+        
+        // Create the request body for Claude using Gson for proper JSON construction
+        JsonObject requestBody = new JsonObject();
+        requestBody.addProperty("anthropic_version", "bedrock-2023-05-31");
+        requestBody.addProperty("max_tokens", 1000);
+        
+        JsonArray messages = new JsonArray();
+        JsonObject message = new JsonObject();
+        message.addProperty("role", "user");
+        message.addProperty("content", processedPrompt);
+        messages.add(message);
+        requestBody.add("messages", messages);
+        
+        String requestBodyString = gson.toJson(requestBody);
+        log.debug("Claude request body: {}", requestBodyString);
         
         InvokeModelRequest request = InvokeModelRequest.builder()
                 .modelId(modelId)
-                .body(SdkBytes.fromUtf8String(requestBody))
+                .body(SdkBytes.fromUtf8String(requestBodyString))
                 .contentType("application/json")
                 .build();
         
@@ -157,21 +161,25 @@ public class BedrockService implements AIService {
     }
     
     private String invokeTitanModel(String prompt) throws Exception {
-        // Create the request body for Titan
-        String requestBody = String.format("""
-            {
-                "inputText": "%s",
-                "textGenerationConfig": {
-                    "maxTokenCount": 1000,
-                    "temperature": 0.7,
-                    "topP": 0.9
-                }
-            }
-            """, prompt.replace("\"", "\\\"").replace("\n", "\\n"));
+        // Validate and truncate prompt if necessary
+        String processedPrompt = validateAndTruncatePrompt(prompt);
+        
+        // Create the request body for Titan using Gson for proper JSON construction
+        JsonObject requestBody = new JsonObject();
+        requestBody.addProperty("inputText", processedPrompt);
+        
+        JsonObject textGenerationConfig = new JsonObject();
+        textGenerationConfig.addProperty("maxTokenCount", 1000);
+        textGenerationConfig.addProperty("temperature", 0.7);
+        textGenerationConfig.addProperty("topP", 0.9);
+        requestBody.add("textGenerationConfig", textGenerationConfig);
+        
+        String requestBodyString = gson.toJson(requestBody);
+        log.debug("Titan request body: {}", requestBodyString);
         
         InvokeModelRequest request = InvokeModelRequest.builder()
                 .modelId(modelId)
-                .body(SdkBytes.fromUtf8String(requestBody))
+                .body(SdkBytes.fromUtf8String(requestBodyString))
                 .contentType("application/json")
                 .build();
         
@@ -232,6 +240,29 @@ public class BedrockService implements AIService {
         models.add("amazon.titan-text-express-v1");
         models.add("amazon.titan-text-lite-v1");
         return models;
+    }
+    
+    /**
+     * Validate and truncate prompt to ensure it meets Bedrock requirements
+     */
+    private String validateAndTruncatePrompt(String prompt) {
+        if (prompt == null) {
+            return "";
+        }
+        
+        // Bedrock has input limits - typically around 100,000 characters for Titan
+        // We'll be conservative and limit to 50,000 characters to leave room for response
+        final int MAX_PROMPT_LENGTH = 50000;
+        
+        if (prompt.length() <= MAX_PROMPT_LENGTH) {
+            return prompt;
+        }
+        
+        log.warn("Prompt too long ({} chars), truncating to {} chars", prompt.length(), MAX_PROMPT_LENGTH);
+        
+        // Truncate and add indication that content was truncated
+        String truncated = prompt.substring(0, MAX_PROMPT_LENGTH - 100);
+        return truncated + "\n\n[Note: Content truncated due to length limits]";
     }
     
     /**
