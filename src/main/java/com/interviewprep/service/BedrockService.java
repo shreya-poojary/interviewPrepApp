@@ -119,18 +119,18 @@ public class BedrockService implements AIService {
     
     private String invokeClaudeModel(String prompt) throws Exception {
         // Create the request body for Claude
-        String requestBody = String.format("""
-            {
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": 1000,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": "%s"
-                    }
-                ]
-            }
-            """, prompt.replace("\"", "\\\"").replace("\n", "\\n"));
+        String requestBody = String.format(
+            "{\n" +
+            "    \"anthropic_version\": \"bedrock-2023-05-31\",\n" +
+            "    \"max_tokens\": 1000,\n" +
+            "    \"messages\": [\n" +
+            "        {\n" +
+            "            \"role\": \"user\",\n" +
+            "            \"content\": \"%s\"\n" +
+            "        }\n" +
+            "    ]\n" +
+            "}",
+            prompt.replace("\"", "\\\"").replace("\n", "\\n"));
         
         InvokeModelRequest request = InvokeModelRequest.builder()
                 .modelId(modelId)
@@ -158,16 +158,16 @@ public class BedrockService implements AIService {
     
     private String invokeTitanModel(String prompt) throws Exception {
         // Create the request body for Titan
-        String requestBody = String.format("""
-            {
-                "inputText": "%s",
-                "textGenerationConfig": {
-                    "maxTokenCount": 1000,
-                    "temperature": 0.7,
-                    "topP": 0.9
-                }
-            }
-            """, prompt.replace("\"", "\\\"").replace("\n", "\\n"));
+        String requestBody = String.format(
+            "{\n" +
+            "    \"inputText\": \"%s\",\n" +
+            "    \"textGenerationConfig\": {\n" +
+            "        \"maxTokenCount\": 1000,\n" +
+            "        \"temperature\": 0.7,\n" +
+            "        \"topP\": 0.9\n" +
+            "    }\n" +
+            "}",
+            prompt.replace("\"", "\\\"").replace("\n", "\\n"));
         
         InvokeModelRequest request = InvokeModelRequest.builder()
                 .modelId(modelId)

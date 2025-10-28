@@ -79,22 +79,19 @@ public class KeyboardShortcutManager {
     }
     
     private void showShortcutsHelp() {
-        String helpText = """
-            ⌨️ Keyboard Shortcuts
-            ═══════════════════════════════════
-            
-            Space       - Toggle Recording/Submit Answer
-            Ctrl+N      - Next Question
-            Ctrl+M      - Select Interview Mode
-            Ctrl+A      - View Analytics
-            Ctrl+Q      - Quick Practice Mode
-            F1          - Show This Help
-            
-            Navigation:
-            - Use Tab/Shift+Tab to move between elements
-            - Arrow keys to navigate lists
-            - Enter to activate buttons
-            """;
+        String helpText = 
+            "⌨️ Keyboard Shortcuts\n" +
+            "═══════════════════════════════════\n\n" +
+            "Space       - Toggle Recording/Submit Answer\n" +
+            "Ctrl+N      - Next Question\n" +
+            "Ctrl+M      - Select Interview Mode\n" +
+            "Ctrl+A      - View Analytics\n" +
+            "Ctrl+Q      - Quick Practice Mode\n" +
+            "F1          - Show This Help\n\n" +
+            "Navigation:\n" +
+            "- Use Tab/Shift+Tab to move between elements\n" +
+            "- Arrow keys to navigate lists\n" +
+            "- Enter to activate buttons";
         
         JOptionPane.showMessageDialog(
             mainFrame,

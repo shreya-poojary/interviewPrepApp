@@ -70,45 +70,34 @@ public class InterviewService {
     }
     
     private String buildResumeAnalysisPrompt(Resume resume, JobDescription jobDescription) {
-        return String.format("""
-            You are an expert career coach and recruiter. Analyze this resume against the job description.
-            
-            JOB DESCRIPTION:
-            %s
-            
-            RESUME:
-            %s
-            
-            Provide a comprehensive analysis in this format:
-            
-            MATCH_SCORE: [0-100]
-            
-            OVERALL_FEEDBACK:
-            [Detailed assessment in 2-3 sentences]
-            
-            STRENGTHS:
-            - [Strength 1]
-            - [Strength 2]
-            - [Strength 3]
-            
-            WEAKNESSES:
-            - [Weakness 1]
-            - [Weakness 2]
-            - [Weakness 3]
-            
-            SUGGESTIONS:
-            - [Suggestion 1]
-            - [Suggestion 2]
-            - [Suggestion 3]
-            
-            MATCHING_SKILLS:
-            - [Skill 1]
-            - [Skill 2]
-            
-            MISSING_SKILLS:
-            - [Skill 1]
-            - [Skill 2]
-            """,
+        return String.format(
+            "You are an expert career coach and recruiter. Analyze this resume against the job description.\n\n" +
+            "JOB DESCRIPTION:\n" +
+            "%s\n\n" +
+            "RESUME:\n" +
+            "%s\n\n" +
+            "Provide a comprehensive analysis in this format:\n\n" +
+            "MATCH_SCORE: [0-100]\n\n" +
+            "OVERALL_FEEDBACK:\n" +
+            "[Detailed assessment in 2-3 sentences]\n\n" +
+            "STRENGTHS:\n" +
+            "- [Strength 1]\n" +
+            "- [Strength 2]\n" +
+            "- [Strength 3]\n\n" +
+            "WEAKNESSES:\n" +
+            "- [Weakness 1]\n" +
+            "- [Weakness 2]\n" +
+            "- [Weakness 3]\n\n" +
+            "SUGGESTIONS:\n" +
+            "- [Suggestion 1]\n" +
+            "- [Suggestion 2]\n" +
+            "- [Suggestion 3]\n\n" +
+            "MATCHING_SKILLS:\n" +
+            "- [Skill 1]\n" +
+            "- [Skill 2]\n\n" +
+            "MISSING_SKILLS:\n" +
+            "- [Skill 1]\n" +
+            "- [Skill 2]",
             jobDescription.getContent(),
             resume.getContent()
         );
@@ -116,24 +105,19 @@ public class InterviewService {
     
     private String buildQuestionGenerationPrompt(Resume resume, JobDescription jobDescription,
                                                  InterviewMode mode, int count) {
-        return String.format("""
-            You are an experienced interviewer. Generate %d interview questions for %s.
-            
-            JOB DESCRIPTION:
-            %s
-            
-            CANDIDATE'S RESUME:
-            %s
-            
-            Guidelines:
-            - Mix of technical, behavioral, and situational questions
-            - Questions should be specific to the candidate's background and job requirements
-            - Difficulty level: %s
-            - Format: Number each question (1., 2., 3., etc.)
-            - Make questions realistic and relevant
-            
-            Generate the questions now:
-            """,
+        return String.format(
+            "You are an experienced interviewer. Generate %d interview questions for %s.\n\n" +
+            "JOB DESCRIPTION:\n" +
+            "%s\n\n" +
+            "CANDIDATE'S RESUME:\n" +
+            "%s\n\n" +
+            "Guidelines:\n" +
+            "- Mix of technical, behavioral, and situational questions\n" +
+            "- Questions should be specific to the candidate's background and job requirements\n" +
+            "- Difficulty level: %s\n" +
+            "- Format: Number each question (1., 2., 3., etc.)\n" +
+            "- Make questions realistic and relevant\n\n" +
+            "Generate the questions now:",
             count,
             mode.getDisplayName(),
             jobDescription.getContent(),
@@ -143,30 +127,22 @@ public class InterviewService {
     }
     
     private String buildAnswerEvaluationPrompt(InterviewQuestion question, String answer) {
-        return String.format("""
-            Evaluate this interview answer on a scale of 0-10:
-            
-            Question (%s): %s
-            
-            Candidate's Answer: %s
-            
-            Provide evaluation in this format:
-            
-            SCORE: [0-10]
-            
-            FEEDBACK:
-            What was good:
-            - [Point 1]
-            - [Point 2]
-            
-            What could be improved:
-            - [Point 1]
-            - [Point 2]
-            
-            Specific suggestions:
-            - [Suggestion 1]
-            - [Suggestion 2]
-            """,
+        return String.format(
+            "Evaluate this interview answer on a scale of 0-10:\n\n" +
+            "Question (%s): %s\n\n" +
+            "Candidate's Answer: %s\n\n" +
+            "Provide evaluation in this format:\n\n" +
+            "SCORE: [0-10]\n\n" +
+            "FEEDBACK:\n" +
+            "What was good:\n" +
+            "- [Point 1]\n" +
+            "- [Point 2]\n\n" +
+            "What could be improved:\n" +
+            "- [Point 1]\n" +
+            "- [Point 2]\n\n" +
+            "Specific suggestions:\n" +
+            "- [Suggestion 1]\n" +
+            "- [Suggestion 2]",
             question.getCategory(),
             question.getQuestion(),
             answer
@@ -327,36 +303,28 @@ public class InterviewService {
             prompt.append("\n");
         }
         
-        prompt.append("""
-            Provide comprehensive analytics in this exact format:
-            
-            OVERALL_SCORE: [0-10]
-            
-            TECHNICAL_SCORE: [0-10]
-            BEHAVIORAL_SCORE: [0-10]
-            COMMUNICATION_SCORE: [0-10]
-            CONFIDENCE_SCORE: [0-10]
-            
-            PERFORMANCE_LEVEL: [Excellent/Good/Needs Improvement]
-            
-            STRENGTHS:
-            - [Strength 1]
-            - [Strength 2]
-            - [Strength 3]
-            
-            WEAKNESSES:
-            - [Weakness 1]
-            - [Weakness 2]
-            - [Weakness 3]
-            
-            DETAILED_FEEDBACK:
-            [Comprehensive analysis of the interview performance]
-            
-            IMPROVEMENT_SUGGESTIONS:
-            - [Suggestion 1]
-            - [Suggestion 2]
-            - [Suggestion 3]
-            """);
+        prompt.append(
+            "Provide comprehensive analytics in this exact format:\n\n" +
+            "OVERALL_SCORE: [0-10]\n\n" +
+            "TECHNICAL_SCORE: [0-10]\n" +
+            "BEHAVIORAL_SCORE: [0-10]\n" +
+            "COMMUNICATION_SCORE: [0-10]\n" +
+            "CONFIDENCE_SCORE: [0-10]\n\n" +
+            "PERFORMANCE_LEVEL: [Excellent/Good/Needs Improvement]\n\n" +
+            "STRENGTHS:\n" +
+            "- [Strength 1]\n" +
+            "- [Strength 2]\n" +
+            "- [Strength 3]\n\n" +
+            "WEAKNESSES:\n" +
+            "- [Weakness 1]\n" +
+            "- [Weakness 2]\n" +
+            "- [Weakness 3]\n\n" +
+            "DETAILED_FEEDBACK:\n" +
+            "[Comprehensive analysis of the interview performance]\n\n" +
+            "IMPROVEMENT_SUGGESTIONS:\n" +
+            "- [Suggestion 1]\n" +
+            "- [Suggestion 2]\n" +
+            "- [Suggestion 3]");
         
         return prompt.toString();
     }

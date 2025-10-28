@@ -171,17 +171,17 @@ public class TestUtils {
     }
 
     /**
-     * Create a test ResumeUpload
+     * Create a test Resume
      */
-    public static ResumeUpload createTestResumeUpload() {
-        ResumeUpload upload = new ResumeUpload();
-        upload.setUserId("test-user");
-        upload.setFileName("test-resume.pdf");
-        upload.setFilePath("/path/to/test-resume.pdf");
-        upload.setFileSize(1024L);
-        upload.setUploadedAt(LocalDateTime.now());
+    public static Resume createTestResume() {
+        Resume resume = new Resume();
+        resume.setUserId("test-user");
+        resume.setFileName("test-resume.pdf");
+        resume.setFilePath("/path/to/test-resume.pdf");
+        resume.setFileSize(1024L);
+        resume.setUploadedAt(LocalDateTime.now());
         
-        return upload;
+        return resume;
     }
 
     /**
@@ -208,86 +208,69 @@ public class TestUtils {
      * Create a test AI response for question generation
      */
     public static String createTestQuestionGenerationResponse() {
-        return """
-            1. What is your experience with Java programming?
-            (This question assesses technical skills and experience level)
-            
-            2. Describe a challenging project you worked on recently.
-            (This question evaluates problem-solving and project management skills)
-            
-            3. How do you handle conflicts within your development team?
-            (This question tests leadership and communication skills)
-            
-            4. What is your approach to debugging complex issues?
-            (This question examines technical problem-solving methodology)
-            
-            5. Tell me about a time when you had to learn a new technology quickly.
-            (This question assesses adaptability and learning ability)
-            """;
+        return 
+            "1. What is your experience with Java programming?\n" +
+            "(This question assesses technical skills and experience level)\n\n" +
+            "2. Describe a challenging project you worked on recently.\n" +
+            "(This question evaluates problem-solving and project management skills)\n\n" +
+            "3. How do you handle conflicts within your development team?\n" +
+            "(This question tests leadership and communication skills)\n\n" +
+            "4. What is your approach to debugging complex issues?\n" +
+            "(This question examines technical problem-solving methodology)\n\n" +
+            "5. Tell me about a time when you had to learn a new technology quickly.\n" +
+            "(This question assesses adaptability and learning ability)";
     }
 
     /**
      * Create a test AI response for resume analysis
      */
     public static String createTestResumeAnalysisResponse() {
-        return """
-            MATCH_SCORE: 85
-            
-            OVERALL_FEEDBACK:
-            Strong candidate with relevant technical experience and good communication skills.
-            
-            STRENGTHS:
-            - Strong Java programming skills
-            - Experience with Spring Boot and microservices
-            - Good problem-solving abilities
-            - Leadership experience in student organizations
-            
-            WEAKNESSES:
-            - Limited industry experience
-            - Could improve cloud platform knowledge
-            - Needs more specific project examples
-            
-            SUGGESTIONS:
-            - Gain more hands-on experience with AWS
-            - Prepare specific project examples with metrics
-            - Consider obtaining relevant certifications
-            """;
+        return 
+            "MATCH_SCORE: 85\n\n" +
+            "OVERALL_FEEDBACK:\n" +
+            "Strong candidate with relevant technical experience and good communication skills.\n\n" +
+            "STRENGTHS:\n" +
+            "- Strong Java programming skills\n" +
+            "- Experience with Spring Boot and microservices\n" +
+            "- Good problem-solving abilities\n" +
+            "- Leadership experience in student organizations\n\n" +
+            "WEAKNESSES:\n" +
+            "- Limited industry experience\n" +
+            "- Could improve cloud platform knowledge\n" +
+            "- Needs more specific project examples\n\n" +
+            "SUGGESTIONS:\n" +
+            "- Gain more hands-on experience with AWS\n" +
+            "- Prepare specific project examples with metrics\n" +
+            "- Consider obtaining relevant certifications";
     }
 
     /**
      * Create a test AI response for interview analytics
      */
     public static String createTestAnalyticsResponse() {
-        return """
-            OVERALL_SCORE: 8.5
-            
-            TECHNICAL_SCORE: 9.0
-            BEHAVIORAL_SCORE: 8.0
-            COMMUNICATION_SCORE: 8.5
-            CONFIDENCE_SCORE: 8.0
-            
-            PERFORMANCE_LEVEL: Good
-            
-            STRENGTHS:
-            - Strong technical knowledge
-            - Good communication skills
-            - Problem-solving ability
-            - Clear explanations
-            
-            WEAKNESSES:
-            - Could improve time management
-            - Needs more specific examples
-            - Could be more confident in responses
-            
-            DETAILED_FEEDBACK:
-            Overall good performance with strong technical skills. Candidate demonstrated good understanding of concepts but could improve in providing specific examples and managing time better.
-            
-            IMPROVEMENT_SUGGESTIONS:
-            - Practice more coding problems
-            - Prepare specific project examples
-            - Work on time management techniques
-            - Build confidence through practice
-            """;
+        return 
+            "OVERALL_SCORE: 8.5\n\n" +
+            "TECHNICAL_SCORE: 9.0\n" +
+            "BEHAVIORAL_SCORE: 8.0\n" +
+            "COMMUNICATION_SCORE: 8.5\n" +
+            "CONFIDENCE_SCORE: 8.0\n\n" +
+            "PERFORMANCE_LEVEL: Good\n\n" +
+            "STRENGTHS:\n" +
+            "- Strong technical knowledge\n" +
+            "- Good communication skills\n" +
+            "- Problem-solving ability\n" +
+            "- Clear explanations\n\n" +
+            "WEAKNESSES:\n" +
+            "- Could improve time management\n" +
+            "- Needs more specific examples\n" +
+            "- Could be more confident in responses\n\n" +
+            "DETAILED_FEEDBACK:\n" +
+            "Overall good performance with strong technical skills. Candidate demonstrated good understanding of concepts but could improve in providing specific examples and managing time better.\n\n" +
+            "IMPROVEMENT_SUGGESTIONS:\n" +
+            "- Practice more coding problems\n" +
+            "- Prepare specific project examples\n" +
+            "- Work on time management techniques\n" +
+            "- Build confidence through practice";
     }
 
     /**
